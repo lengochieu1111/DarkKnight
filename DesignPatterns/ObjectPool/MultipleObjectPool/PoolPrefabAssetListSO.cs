@@ -24,7 +24,12 @@ namespace HIEU_NL.DesignPatterns.ObjectPool.Multiple
     Slash_2_PLATFORMER,
     
         //## Effect
-    Blood_1_PLATFORMER,
+        Blood_1_PLATFORMER,
+    
+        //## Bot
+        Golem_1_PLATFORMER,
+        Golem_2_PLATFORMER,
+        Golem_3_PLATFORMER,
 
     }
     

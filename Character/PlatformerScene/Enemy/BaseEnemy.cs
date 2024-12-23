@@ -19,7 +19,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
     {
         //# SELF
         public Transform MyTransform { get; private set; }
-        [field: SerializeField, BoxGroup("PLAYER"), Required] public Player Player;
         
         //# ANIMATOR
         [SerializeField, BoxGroup("ANIMATOR"), Required] private Animator _animator;
@@ -63,6 +62,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         
         //## CHASE
         [SerializeField, Foldout("Chase")] private bool _isChasing;
+        [field: SerializeField, Foldout("Chase")] public Transform TargetTransform { get; private set; }
         [field: SerializeField, Foldout("Chase")] public float ChaseSpeed { get; private set; } = 2f;
         [SerializeField, Foldout("Chase")] private float _chaseRadius = 5f;
         public Vector3 LeftChasePosition { get; private set; }
@@ -172,7 +172,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             protected override void ResetValues()
             {
                 base.ResetValues();
-                
+
+                TargetTransform = GameMode.Instance.GetPlayer().transform;
                 
                 //##
                 IsFlippingLeft = false;
@@ -478,12 +479,12 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
                 _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, _verticalVelocity);
             }
 
-            //
+            //#
 
             public bool PlayerInChaseRange()
             {
-                return Player.transform.position.x > LeftChasePosition.x
-                    && Player.transform.position.x < RightChaselPosition.x;
+                return TargetTransform.transform.position.x > LeftChasePosition.x
+                    && TargetTransform.transform.position.x < RightChaselPosition.x;
             }
             
             public bool PlayerInAttackRange()
@@ -491,8 +492,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
                 int coefficient = IsFlippingLeft ? -1 : 1;
                 Vector3 boxCenter = new Vector2(transform.position.x + _attackOffsetWidth * coefficient, transform.position.y + _attackOffsetHeight);
                 Vector3 boxSize = new Vector2(_attackRadiusWidth, _attackRangeHeight);
-                RaycastHit2D[] hitArray = Physics2D.BoxCastAll(boxCenter, boxSize, 0f, Vector2.right, 0f, _attackLayer);
-                return hitArray.Length > 0;
+                RaycastHit2D hitArray = Physics2D.BoxCast(boxCenter, boxSize, 0f, Vector2.right, 0f, _attackLayer);
+                return hitArray.collider != null;
             }
             
             /*public bool PlayerInAttackRange()

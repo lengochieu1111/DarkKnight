@@ -1,3 +1,4 @@
+using System;
 using HIEU_NL.DesignPatterns.Singleton;
 using NaughtyAttributes;
 using System.Collections;
@@ -75,11 +76,19 @@ namespace HIEU_NL.DesignPatterns.ObjectPool.Multiple
         {
             _currentPoolPrefabType = poolObject.PoolPrefabType;
             
-            poolObject.transform.SetParent(transform);
-            
-            //## Get Object Pool
-            _currentObjectPool = GetObjectPool(poolObject.PoolPrefabType);
-            _currentObjectPool?.Release(poolObject);
+            //## Check  
+            if (_activePoolObjectAll.TryGetValue(_currentPoolPrefabType, out var activePoolObjectList))
+            {
+                if (activePoolObjectList.Contains(poolObject))
+                {
+                    poolObject.transform.SetParent(transform);
+
+                    //## Get Object Pool
+                    _currentObjectPool = GetObjectPool(_currentPoolPrefabType);
+                    _currentObjectPool?.Release(poolObject);
+                }
+            }
+
         }
 
         #endregion
@@ -176,6 +185,17 @@ namespace HIEU_NL.DesignPatterns.ObjectPool.Multiple
 
         #endregion
 
+        //## TEST
+        
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                PoolPrefab poolPrefab = MultipleObjectPool.Instance.GetPoolObject(PoolPrefabType.Golem_1_PLATFORMER);
+                poolPrefab.Activate();
+            }
+
+        }
     }
 }
 

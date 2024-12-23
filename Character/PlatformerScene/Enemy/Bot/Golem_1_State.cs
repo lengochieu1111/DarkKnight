@@ -149,7 +149,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
                         owner.SetIsFlippingLeft(!owner.IsFlippingLeft);
                     }
     
-                    _chaseDirection = owner.MyTransform.position.x > owner.Player.transform.position.x ? Vector2.left : Vector2.right;
+                    _chaseDirection = owner.MyTransform.position.x > owner.TargetTransform.position.x ? Vector2.left : Vector2.right;
                     _chaseSpeed = Mathf.Lerp(_chaseSpeed, owner.ChaseSpeed, owner.ChaseSpeed * Time.deltaTime);
     
                     owner.MyTransform.position += (Vector3)_chaseDirection * _chaseSpeed * Time.deltaTime;
@@ -170,8 +170,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
     
             bool LookingTowardThePlayer()
             {
-                return owner.IsFlippingLeft && owner.MyTransform.position.x <= owner.Player.transform.position.x
-                    || !owner.IsFlippingLeft && owner.MyTransform.position.x >= owner.Player.transform.position.x;
+                return owner.IsFlippingLeft && owner.MyTransform.position.x <= owner.TargetTransform.position.x
+                    || !owner.IsFlippingLeft && owner.MyTransform.position.x >= owner.TargetTransform.position.x;
             }
     
     

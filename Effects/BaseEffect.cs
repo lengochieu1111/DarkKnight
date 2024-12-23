@@ -3,6 +3,7 @@ using HIEU_NL.DesignPatterns.ObjectPool.Multiple;
 using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -19,41 +20,37 @@ public class BaseEffect : PoolPrefab
     {
         base.OnEnable();
 
-        //## Deactive Affter Animation End
+        //## Deactive Affter Effect End
+        Deactivate_UniTask().Forget();
+        
+    }
+
+    private async UniTask Deactivate_UniTask()
+    {
         if (_deactiveAfterAnimationEnd && _animator != null)
         {
-            _deactivateCoroutine = StartCoroutine(Deactivate_Coroutine());
+            float deactivateTime = _animator.GetCurrentAnimatorStateInfo(0).length;
+            await UniTask.WaitForSeconds(deactivateTime);
+            
+            Deactivate();
+
         }
         else if (_deactiveAfterParticleSystemEnd && _particleSystem != null)
         {
-            // _particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-        }
-        
-    }
-
-    private IEnumerator Deactivate_Coroutine()
-    {
-        float deactivateTime = _animator.GetCurrentAnimatorStateInfo(0).length;
-
-        yield return new WaitForSeconds(deactivateTime);
-
-        Deactivate();
-
-    }
-
-    protected override void OnDisable()
-    {
-        base.OnDisable();
-
-        /*if (!_deactiveAfterAnimationEnd)
-        {
+            await UniTask.WaitUntil(() => ParticleSystemIsActive());
+            
+            await UniTask.WaitUntil(() => !ParticleSystemIsActive());
+            
             Deactivate();
-        }*/
-        
+            
+            //##
+            bool ParticleSystemIsActive()
+            {
+                return _particleSystem.isPlaying && _particleSystem.particleCount > 0 
+                    && !_particleSystem.isStopped && _particleSystem.IsAlive();
+            }
+
+        }
     }
 
-    /*private void OnParticleSystemStopped()
-    {
-        Debug.Log("OnParticleSystemStopped");
-    }*/
 }
