@@ -1,6 +1,8 @@
 using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Manager;
+using HIEU_NL.ObjectPool.Audio;
 using HIEU_NL.Platformer.Script.Interface;
 using UnityEngine;
 
@@ -48,6 +50,9 @@ public class AttackEffect : BaseEffect, IAttackable
     {
         _isTracing = true;
         _hitedList.Clear();
+        
+        //## Play audio 
+        SoundManager.Instance.PlaySound(SoundType.Sword_Slash_Normal_1);
     }
 
     public void ITracing()
@@ -59,9 +64,15 @@ public class AttackEffect : BaseEffect, IAttackable
             if (hit.transform.TryGetComponent(out HittableObject hittableObject) && !_hitedList.Contains(hittableObject))
             {
                 HitData hitData = new HitData();
-                hittableObject.IHit(hitData);
+                bool hitSuccess = hittableObject.IHit(hitData);
+                if (hitSuccess)
+                {
+                    _hitedList.Add(hittableObject);
+                    
+                    //## Play audio
+                    SoundManager.Instance.PlaySound(SoundType.Sword_Hit_Normal_1);
+                }
 
-                _hitedList.Add(hittableObject);
             }
         }
     }

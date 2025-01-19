@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public abstract class RyoMonoBehaviour : MonoBehaviour
@@ -29,7 +30,9 @@ public abstract class RyoMonoBehaviour : MonoBehaviour
     protected virtual void OnDisable() { }
     
     protected virtual void OnDestroy() { }
-    
+
+    protected virtual void OnValidate() { }
+
     #endregion
 
     #region SETUP/RESET

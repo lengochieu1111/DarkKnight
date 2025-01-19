@@ -39,10 +39,13 @@ namespace HIEU_NL.DesignPatterns.StateMachine
             public void SetState(IState state)
             {
                 _previousNodeState = _currentNodeState;
+
+                // Call event
+                OnChangeState?.Invoke();
+                
                 _currentNodeState = _nodes[state.GetType()];
                 _currentNodeState.State?.OnEnter();
                 
-                OnChangeState?.Invoke();
             }
     
             private void ChangeState(IState state)
@@ -51,6 +54,9 @@ namespace HIEU_NL.DesignPatterns.StateMachine
     
                 var previousState = _currentNodeState.State;
                 var nextState = _nodes[state.GetType()].State;
+                
+                // Call event
+                OnChangeState?.Invoke();
     
                 previousState?.OnExit();
                 nextState?.OnEnter();
@@ -58,7 +64,6 @@ namespace HIEU_NL.DesignPatterns.StateMachine
                 _previousNodeState = _currentNodeState;
                 _currentNodeState = _nodes[state.GetType()];
                 
-                OnChangeState?.Invoke();
             }
     
             ITransition GetTransition()

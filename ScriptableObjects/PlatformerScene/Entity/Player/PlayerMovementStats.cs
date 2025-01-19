@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace HIEU_NL.Platformer.SO
+namespace HIEU_NL.Platformer.SO.Entity.Player
 {
 
-    [CreateAssetMenu(fileName = "Player Movement Stats", menuName = "Scriptable Object / Platformer Scene / Player Movement Stats")]
+    [CreateAssetMenu(fileName = "Player Movement Stats", menuName = "Scriptable Object / Platformer Scene / Player / Movement Stats")]
 
     public class PlayerMovementStats : ScriptableObject
     {

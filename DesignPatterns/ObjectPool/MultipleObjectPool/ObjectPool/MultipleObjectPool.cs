@@ -191,7 +191,7 @@ namespace HIEU_NL.DesignPatterns.ObjectPool.Multiple
         {
             if (Input.GetKeyDown(KeyCode.S))
             {
-                PoolPrefab poolPrefab = MultipleObjectPool.Instance.GetPoolObject(PoolPrefabType.Golem_1_PLATFORMER);
+                PoolPrefab poolPrefab = MultipleObjectPool.Instance.GetPoolObject(PoolPrefabType.BOT_Mosquito_PLATFORMER);
                 poolPrefab.Activate();
             }
 

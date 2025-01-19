@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace HIEU_NL.Platformer.SO
+namespace HIEU_NL.Platformer.SO.Entity.Player
 {
-    [CreateAssetMenu(fileName = "Player Attack Stats", menuName = "Scriptable Object / Platformer Scene / Player Attack Stats")]
+    [CreateAssetMenu(fileName = "Player Attack Stats", menuName = "Scriptable Object / Platformer Scene / Player / Attack Stats")]
 
     public class PlayerAttackStats : ScriptableObject
     {

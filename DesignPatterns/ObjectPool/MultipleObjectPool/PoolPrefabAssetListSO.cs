@@ -20,16 +20,27 @@ namespace HIEU_NL.DesignPatterns.ObjectPool.Multiple
     Player_PUZZLE,
 
     //# ____PLATFORMER_____
-    Slash_1_PLATFORMER,
-    Slash_2_PLATFORMER,
     
-        //## Effect
-        Blood_1_PLATFORMER,
+    //## Effect
+        EFFECT_Slash_1_Normal_PLATFORMER,
+        EFFECT_Slash_2_Normal_PLATFORMER,
+        
+        EFFECT_Blood_1_PLATFORMER,
     
         //## Bot
-        Golem_1_PLATFORMER,
-        Golem_2_PLATFORMER,
-        Golem_3_PLATFORMER,
+        BOT_Golem_1_PLATFORMER,
+        BOT_Golem_2_PLATFORMER,
+        BOT_Golem_3_PLATFORMER,
+        
+        BOT_Skeleton_Axe_PLATFORMER,
+        BOT_Skeleton_Shield_PLATFORMER,
+        BOT_Skeleton_Sword_PLATFORMER,
+        
+        BOT_Bush_PLATFORMER,
+        BOT_Mushroon_PLATFORMER,
+        BOT_Slime_PLATFORMER,
+        
+        BOT_Mosquito_PLATFORMER,
 
     }
     

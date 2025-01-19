@@ -1,12 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
+using HIEU_NL.Platformer.Script.Entity;
+using NaughtyAttributes;
 using UnityEngine;
 
 namespace Architecture.MVC
 {
-    public abstract class MVC_Controller<BaseModel, BaseView> : RyoMonoBehaviour
+    public abstract class MVC_Controller<BaseModel, BaseView> : BaseEntity
     {
-        [Header("MVC")]
+        [BoxGroup("MVC")]
         [SerializeField] protected BaseModel model;
         [SerializeField] protected BaseView view;
         public BaseModel Model => model;

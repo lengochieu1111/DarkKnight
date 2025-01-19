@@ -1,40 +1,25 @@
-using HIEU_NL.DesignPatterns.StateMachine;
-using HIEU_NL.Platformer.Script;
 using System.Collections;
-using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 using static HIEU_NL.Utilities.ParameterExtensions.Animation;
 
-namespace HIEU_NL.Platformer.Script.Entity.Enemy
+namespace HIEU_NL.Platformer.Script.Entity.Enemy.Skeleton_Axe
 {
-    public class Golem_1_State
+    public class Skeleton_Axe_State
     {
-        public enum State
-        {
-            Idle,
-            Patrol,
-            Chase,
-            Attack,
-            Pain,
-            Dead
-        }
-        
         /// <summary>
         /// IDLE STATE
         /// </summary>
-        public class IdleState : BaseState<BaseEnemy>
+        public class IdleState : BaseEnemyState.IdleState
         {
-            private float _transitionAnimDuration = 0.2f;
             private Coroutine _idleCoroutine;
     
             public IdleState(BaseEnemy owner, Animator animator) : base(owner, animator) { }
     
             public override void OnEnter()
             {
-                owner.Begin_IdleState();
+                base.OnEnter();
     
-                animator.CrossFadeInFixedTime(ANIM_HASH_Idle, _transitionAnimDuration);
+                animator.CrossFadeInFixedTime(ANIM_HASH_Idle, transitionAnimDuration);
     
                 _idleCoroutine = owner.StartCoroutine(Idle_Coroutine());
     
@@ -44,14 +29,15 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             {
                 owner.StopCoroutine(_idleCoroutine);
                 _idleCoroutine = null;
-                owner.Finish_IdleState();
+                
+                base.OnExit();
             }
             
             //#
             
-            IEnumerator Idle_Coroutine()
+            private IEnumerator Idle_Coroutine()
             {
-                yield return new WaitForSeconds(owner.IdleTimeMax);
+                yield return new WaitForSeconds(owner.Stats.IdleTimeMax);
                 owner.Finish_IdleState();
             }
     
@@ -60,17 +46,16 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         /// <summary>
         /// PATROL STATE
         /// </summary>
-        public class PatrolState : BaseState<BaseEnemy>
+        public class PatrolState : BaseEnemyState.PatrolState
         {
             private Vector2 _patrolDirection;
             private float _patrolSpeed;
-            private float _transitionAnimDuration = 0.2f;
     
             public PatrolState(BaseEnemy owner, Animator animator) : base(owner, animator) { }
     
             public override void OnEnter()
             {
-                owner.Begin_PatrolState();
+                base.OnEnter();
     
                 if (HasReachToDestination())
                 {
@@ -80,7 +65,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
                 _patrolSpeed = 0f;
                 _patrolDirection = owner.IsFlippingLeft ? Vector2.left : Vector2.right;
     
-                animator.CrossFadeInFixedTime(ANIM_HASH_Walk, _transitionAnimDuration);
+                animator.CrossFadeInFixedTime(ANIM_HASH_Walk, transitionAnimDuration);
     
             }
     
@@ -92,25 +77,20 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
                 }
                 else
                 {
-                    _patrolSpeed = Mathf.Lerp(_patrolSpeed, owner.PatrolSpeed, owner.PatrolSpeed * Time.deltaTime);
-                    owner.MyTransform.position += (Vector3)_patrolDirection * _patrolSpeed * Time.deltaTime;
+                    _patrolSpeed = Mathf.Lerp(_patrolSpeed, owner.Stats.PatrolSpeed, owner.Stats.PatrolSpeed * Time.deltaTime);
+                    owner.MyTransform.position += (Vector3)_patrolDirection * (_patrolSpeed * Time.deltaTime);
                 }
     
             }
     
-            public override void OnExit()
-            {
-                owner.Finish_PatrolState();
-            }
-    
             //# 
     
-            void HandleReachToDestionation()
+            private void HandleReachToDestionation()
             {
                 owner.Finish_PatrolState();
             }
     
-            bool HasReachToDestination()
+            private bool HasReachToDestination()
             {
                 return owner.IsFlippingLeft && owner.MyTransform.position.x <= owner.LeftPatrolPosition.x
                     || !owner.IsFlippingLeft && owner.MyTransform.position.x >= owner.RightPatrolPosition.x
@@ -122,21 +102,20 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         /// <summary>
         /// CHASE STATE
         /// </summary>
-        public class ChaseState : BaseState<BaseEnemy>
+        public class ChaseState : BaseEnemyState.ChaseState
         {
             private Vector2 _chaseDirection;
             private float _chaseSpeed;
-            private float _transitionAnimDuration = 0.2f;
     
             public ChaseState(BaseEnemy owner, Animator animator) : base(owner, animator) { }
     
             public override void OnEnter()
             {
-                owner.Begin_ChaseState();
+                base.OnEnter();
     
                 _chaseSpeed = 0f;
     
-                animator.CrossFadeInFixedTime(ANIM_HASH_Walk, _transitionAnimDuration);
+                animator.CrossFadeInFixedTime(ANIM_HASH_Walk, transitionAnimDuration);
     
             }
     
@@ -150,9 +129,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
                     }
     
                     _chaseDirection = owner.MyTransform.position.x > owner.TargetTransform.position.x ? Vector2.left : Vector2.right;
-                    _chaseSpeed = Mathf.Lerp(_chaseSpeed, owner.ChaseSpeed, owner.ChaseSpeed * Time.deltaTime);
+                    _chaseSpeed = Mathf.Lerp(_chaseSpeed, owner.Stats.ChaseSpeed, owner.Stats.ChaseSpeed * Time.deltaTime);
     
-                    owner.MyTransform.position += (Vector3)_chaseDirection * _chaseSpeed * Time.deltaTime;
+                    owner.MyTransform.position += (Vector3)_chaseDirection * (_chaseSpeed * Time.deltaTime);
                 }
                 else
                 {
@@ -161,14 +140,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
     
             }
     
-            public override void OnExit()
-            {
-                owner.Finish_ChaseState();
-            }
-            
             //#
     
-            bool LookingTowardThePlayer()
+            private bool LookingTowardThePlayer()
             {
                 return owner.IsFlippingLeft && owner.MyTransform.position.x <= owner.TargetTransform.position.x
                     || !owner.IsFlippingLeft && owner.MyTransform.position.x >= owner.TargetTransform.position.x;
@@ -180,18 +154,19 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         /// <summary>
         /// ATTACK STATE
         /// </summary>
-        public class AttackState : BaseState<BaseEnemy>
+        public class AttackState : BaseEnemyState.AttackState
         {
-            private float _transitionAnimDuration = 0.2f;
             private Coroutine _attackCoroutine;
+            private int _attackAnimHash;
     
             public AttackState(BaseEnemy owner, Animator animator) : base(owner, animator) { }
     
             public override void OnEnter()
             {
-                owner.Begin_AttackState();
+                base.OnEnter();
     
-                animator.CrossFadeInFixedTime(ANIM_HASH_Attack, _transitionAnimDuration);
+                _attackAnimHash = ALL_ANIM_HASH[owner.Stats.AttackDataArray[owner.AttackIndex].AttackAnimType];
+                animator.CrossFadeInFixedTime(_attackAnimHash, transitionAnimDuration);
     
                 _attackCoroutine = owner.StartCoroutine(Attack_Coroutine());
     
@@ -201,14 +176,15 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             {
                 owner.StopCoroutine(_attackCoroutine);
                 _attackCoroutine = null;
-                owner.Finish_AttackState();
+                
+                base.OnExit();
             }
             
             //#
             
             private IEnumerator Attack_Coroutine()
             {
-                yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).shortNameHash.Equals(ANIM_HASH_Attack));
+                yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).shortNameHash.Equals(_attackAnimHash));
                 float attackTime = animator.GetCurrentAnimatorStateInfo(0).length;
                 yield return new WaitForSeconds(attackTime);
                 owner.Finish_AttackState();
@@ -219,19 +195,19 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         /// <summary>
         /// PAIN STATE
         /// </summary>
-        public class PainState : BaseState<BaseEnemy>
+        public class PainState : BaseEnemyState.PainState
         {
-            private float _blendAnimCoefficient = 0.8f;
-            private float _transitionAnimDuration = 0.2f;
             private Coroutine _painCoroutine;
     
             public PainState(BaseEnemy owner, Animator animator) : base(owner, animator) { }
             
             public override void OnEnter()
             {
-                owner.Begin_PainState();
+                base.OnEnter();
+                
+                blendAnimCoefficient = 0.8f;
     
-                animator.CrossFadeInFixedTime(ANIM_HASH_Pain, _transitionAnimDuration);
+                animator.CrossFadeInFixedTime(ANIM_HASH_Pain, transitionAnimDuration);
     
                 _painCoroutine = owner.StartCoroutine(Pain_Coroutine());
     
@@ -247,22 +223,20 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             //#
             
             private IEnumerator Pain_Coroutine()
-             {
+            {
                  yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).shortNameHash.Equals(ANIM_HASH_Pain));
-                 float painTime = animator.GetCurrentAnimatorStateInfo(0).length * _blendAnimCoefficient;
+                 float painTime = animator.GetCurrentAnimatorStateInfo(0).length * blendAnimCoefficient;
                  yield return new WaitForSeconds(painTime);
                  owner.Finish_PainState();
-             }
+            }
             
         }
         
         /// <summary>
         /// DIE STATE
         /// </summary>
-        public class DeadState : BaseState<BaseEnemy>
+        public class DeadState : BaseEnemyState.DeadState 
         {
-            private float _blendAnimCoefficient = 1f;
-            private float _transitionAnimDuration = 0.2f;
             private Coroutine _deadCoroutine;
             
             public DeadState(BaseEnemy owner, Animator animator) : base(owner, animator) { }
@@ -271,7 +245,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             {
                 owner.Begin_DeadState();
                 
-                animator.CrossFadeInFixedTime(ANIM_HASH_Dead, _transitionAnimDuration);
+                animator.CrossFadeInFixedTime(ANIM_HASH_Dead, transitionAnimDuration);
 
                 _deadCoroutine = owner.StartCoroutine(Dead_Coroutine());
                 
@@ -282,22 +256,23 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
                 owner.StopCoroutine(_deadCoroutine);
                 _deadCoroutine = null;
                 
-                owner.Finish_DeadState();
+                base.OnExit();
             }
             
             //#
             private IEnumerator Dead_Coroutine()
             {
                 yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).shortNameHash.Equals(ANIM_HASH_Dead));
-                float painTime = animator.GetCurrentAnimatorStateInfo(0).length * _blendAnimCoefficient;
+                float painTime = animator.GetCurrentAnimatorStateInfo(0).length * blendAnimCoefficient;
                 yield return new WaitForSeconds(painTime);
                 
                 owner.Deactivate();
             }
 
         }
-        
+     
     }
+    
 }
 
 

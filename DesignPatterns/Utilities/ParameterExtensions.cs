@@ -68,8 +68,8 @@ namespace HIEU_NL.Utilities
 
         public static class Animation
         {
-            public const int Y_AXIS_ROTATE_LEFT = -180;
-            public const int Y_AXIS_ROTATE_RIGHT = 180;
+            public const int Y_AXIS_0 = 0;
+            public const int Y_AXIS_180 = 180;
             
             //
 
@@ -87,8 +87,87 @@ namespace HIEU_NL.Utilities
             public static readonly int ANIM_HASH_Pain = Animator.StringToHash("Pain");
 
             public static readonly int ANIM_HASH_Dead = Animator.StringToHash("Dead");
+            
+            public static readonly int ANIM_HASH_Fly = Animator.StringToHash("Fly");
+            
+            // Advance
+            
+            public static readonly int ANIM_HASH_TeleportStart = Animator.StringToHash("TeleportStart");
+            public static readonly int ANIM_HASH_TeleportEnd = Animator.StringToHash("TeleportEnd");
+            
+            public static readonly int ANIM_HASH_Stun = Animator.StringToHash("Stun");
+            
+            public static readonly int ANIM_HASH_Dead_1 = Animator.StringToHash("Dead_1");
+            public static readonly int ANIM_HASH_Dead_2 = Animator.StringToHash("Dead_2");
+
+            public enum AnimationType
+            {
+                ____NORMAL____,
+                Idle,
+                Walk,
+                Run,
+                Dash,
+                
+                JumpStart,
+                JumpLoop,
+                Landing,
+                
+                Attack,
+                Pain,
+                Dead,
+                
+                TeleportStart,
+                TeleportEnd,
+                
+                ____OTHER____,
+                Attack_1,
+                Attack_2,
+                
+            }
+            
+            public static Dictionary<AnimationType, int> ALL_ANIM_HASH = new Dictionary<AnimationType, int>()
+            {
+                { AnimationType.Idle, Animator.StringToHash("Idle") },
+                { AnimationType.Walk, Animator.StringToHash("Walk") },
+                { AnimationType.Run, Animator.StringToHash("Run") },
+                { AnimationType.Dash, Animator.StringToHash("Dash") },
+                
+                { AnimationType.JumpStart, Animator.StringToHash("JumpStart") },
+                { AnimationType.JumpLoop, Animator.StringToHash("JumpLoop") },
+                { AnimationType.Landing, Animator.StringToHash("Landing") },
+                
+                { AnimationType.Attack, Animator.StringToHash("Attack") },
+                
+                { AnimationType.Pain, Animator.StringToHash("Pain") },
+                
+                { AnimationType.Dead, Animator.StringToHash("Dead") },
+                
+                //#
+                { AnimationType.Attack_1, Animator.StringToHash("Attack_1") },
+                { AnimationType.Attack_2, Animator.StringToHash("Attack_2") },
+                
+            };
 
         }
+
+        public static class Layers
+        {
+            public static readonly int Default = LayerMask.GetMask("Default");
+            public static readonly int TransparentFX = LayerMask.GetMask("TransparentFX");
+            public static readonly int Ignore_Raycast = LayerMask.GetMask("Ignore Raycast");
+            
+            public static readonly int Water = LayerMask.GetMask("Water");
+            public static readonly int UI = LayerMask.GetMask("UI");
+            
+            public static readonly int Terrain = LayerMask.GetMask("Terrain");
+            
+            public static readonly int Player = LayerMask.GetMask("Player");
+            public static readonly int Bot = LayerMask.GetMask("Bot");
+            public static readonly int Effect = LayerMask.GetMask("Effect");
+            public static readonly int Effect_Attack = LayerMask.GetMask("Effect_Attack");
+            
+        }
+
 
     }
 

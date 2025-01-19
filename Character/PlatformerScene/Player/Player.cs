@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Architecture.MVC;
-using HIEU_NL.Manager;
-using HIEU_NL.ObjectPool.Audio;
 using HIEU_NL.Utilities;
 using NaughtyAttributes;
 
@@ -16,11 +14,13 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
     {
 
         private PlatformerPLayerInputActions _inputActions;
+        
+        public Transform MyTransform { get; protected set; }
 
-        [Header("Animator")]
+        [BoxGroup("Animator")]
         [SerializeField] private Animator _animator;
 
-        [Header("Input")]
+        [BoxGroup("Input")]
         [SerializeField] private Vector2 _inputDirection;
 
         [SerializeField] private bool _jumpWasPressed;
@@ -36,26 +36,25 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         #region MOVEMENT
 
-        [Header("Move")]
-        [SerializeField] private Rigidbody2D _rigidbody;
+        [BoxGroup("Move")]
         [SerializeField] private float _horizontalVelocity;
 
-        [Header("Flip")]
-        [SerializeField] private bool _isFlippingLeft;
+        /*[BoxGroup("Flip")]
+        [SerializeField] private bool isFlippingLeft;
 
-        [Header("Collider")]
-        [SerializeField] private CapsuleCollider2D _capsuleCollider;
-        [SerializeField] private BoxCollider2D _boxCollider;
+        [BoxGroup("Collider")]
+        [SerializeField] private CapsuleCollider2D capsuleCollider;
+        [SerializeField] private BoxCollider2D boxCollider;
 
-        [SerializeField] private bool _isGrounded;
-        [SerializeField] private bool _bumpedHead;
-        [SerializeField] private bool _isTouchingWall;
+        [SerializeField] private bool isGrounded;
+        [SerializeField] private bool bumpedHead;
+        [SerializeField] private bool isTouchingWall;
         private RaycastHit2D _groundHit;
         private RaycastHit2D _headHit;
         private RaycastHit2D _wallHit;
-        private RaycastHit2D _lastWallHit;
+        private RaycastHit2D lastWallHit;*/
 
-        [Header("Jump")]
+        [BoxGroup("Jump")]
         [SerializeField] private float _verticalVelocity;
         [SerializeField] private bool _isJumping;
         [SerializeField] private bool _isFastFalling;
@@ -64,23 +63,23 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         [SerializeField] private float _fastFallReleaseSpeed;
         [SerializeField] private int _numberOfJumpsUsed;
 
-        [Header("Jump Apex")]
+        [BoxGroup("Jump Apex")]
         [SerializeField] private float _apexPoint;
         [SerializeField] private float _timePastApexThreshold;
         [SerializeField] private bool _isPastApexThreshold;
 
-        [Header("Jump Buffer")]
+        [BoxGroup("Jump Buffer")]
         [SerializeField] private float _jumpBufferTimer;
         [SerializeField] private bool _jumpReleasedDuringBuffer;
 
-        [Header("Jump Coyote")]
+        [BoxGroup("Jump Coyote")]
         [SerializeField] private float _coyoteTimer;
 
-        [Header("Wall Slide")]
+        [BoxGroup("Wall Slide")]
         [SerializeField] private bool _isWallSliding;
         [SerializeField] private bool _isWallSlideFalling;
 
-        [Header("Wall Jump")]
+        [BoxGroup("Wall Jump")]
         [SerializeField] private bool _useWallJumpMoveStats;
         [SerializeField] private bool _isWallJumping;
         [SerializeField] private float _wallJumpTime;
@@ -95,7 +94,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         [SerializeField] private float _timePastWallJumpApexThreshold;
         [SerializeField] private bool _isPastWallJumpApexThreshold;
 
-        [Header("Dash")]
+        [BoxGroup("Dash")]
         [SerializeField] private bool _isDashing;
         [SerializeField] private bool _isAirDashing;
         [SerializeField] private float _dashTimer;
@@ -110,7 +109,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         #region ATTACK
 
-        [Header("Attack")]
+        [BoxGroup("Attack")]
         [SerializeField] private bool _isAttacking;
         [SerializeField] private Transform _attackPointTransform;
         [SerializeField] private int _attackIndex;
@@ -127,6 +126,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         {
             base.Awake();
 
+            //##
             _inputActions = new PlatformerPLayerInputActions();
         }
 
@@ -134,6 +134,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         {
             base.OnEnable();
 
+            //##
             _inputActions.Enable();
         }
 
@@ -141,10 +142,11 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         {
             base.OnDisable();
 
+            //##
             _inputActions.Disable();
         }
 
-        private void Update()
+        protected virtual void Update()
         {
             UpdatePlayerInput();
 
@@ -161,24 +163,25 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
             //##
 
-            if (!_isGrounded || !(_inputDirection.x == 0))
+            if (!isGrounded || !(_inputDirection.x == 0))
             {
                 PlayEffect_Dust();
             }
 
         }
 
-        private void FixedUpdate()
+        protected override void FixedUpdate()
         {
-            CollisionChesks();
+            base.FixedUpdate();
 
+            //##
             Jump();
             Fall();
             WallSlide();
             WallJump();
             Dash();
 
-            if (_isGrounded)
+            if (isGrounded)
             {
                 Move(model.MovementStats.GroundAcceleration, model.MovementStats.GroundDeceleration, _inputDirection);
             }
@@ -204,6 +207,13 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         #region SETUP/RESET COMPONENT/VALUE
 
+        protected override void SetupValues()
+        {
+            base.SetupValues();
+
+            MyTransform = transform;
+        }
+
         protected override void ResetValues()
         {
             base.ResetValues();
@@ -217,19 +227,19 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         {
             base.SetupComponents();
 
-            if (_rigidbody == null)
+            if (rigidbody_ == null)
             {
-                _rigidbody = GetComponent<Rigidbody2D>();
+                rigidbody_ = GetComponent<Rigidbody2D>();
             }
 
-            if (_capsuleCollider == null)
+            if (capsuleCollider == null)
             {
-                _capsuleCollider = GetComponent<CapsuleCollider2D>();
+                capsuleCollider = GetComponent<CapsuleCollider2D>();
             }
 
-            if (_boxCollider == null)
+            if (boxCollider == null)
             {
-                _boxCollider = GetComponent<BoxCollider2D>();
+                boxCollider = GetComponent<BoxCollider2D>();
             }
 
         }
@@ -266,8 +276,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
                 if (isMoving)
                 {
-                    HandleFlip();
-
                     float targetVelocity = 0;
 
                     if (_runIsHeld)
@@ -280,6 +288,10 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
                     }
 
                     _horizontalVelocity = Mathf.Lerp(_horizontalVelocity, targetVelocity, acceleration * Time.fixedDeltaTime);
+                    
+                    //##
+                    HandleFlip();
+                    
                 }
                 else
                 {
@@ -293,15 +305,18 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         private void HandleFlip()
         {
-            if (_horizontalVelocity > 0 && _isFlippingLeft)
+            int yAxisRotateLeft = isBeginFlipLeft ? Y_AXIS_0 : Y_AXIS_180;
+            int yAxisRotateRight = isBeginFlipLeft ? Y_AXIS_180 : Y_AXIS_0;
+            
+            if (_horizontalVelocity > 0 && isFlippingLeft && Mathf.Approximately(MyTransform.eulerAngles.y, yAxisRotateLeft))
             {
-                transform.Rotate(0, Y_AXIS_ROTATE_RIGHT, 0);
-                _isFlippingLeft = !_isFlippingLeft;
+                MyTransform.rotation = Quaternion.Euler(0, yAxisRotateRight, 0);
+                isFlippingLeft = false;
             }
-            else if (_horizontalVelocity < 0 && !_isFlippingLeft)
+            else if (_horizontalVelocity < 0 && !isFlippingLeft && Mathf.Approximately(MyTransform.eulerAngles.y, yAxisRotateRight))
             {
-                transform.Rotate(0, Y_AXIS_ROTATE_LEFT, 0);
-                _isFlippingLeft = !_isFlippingLeft;
+                MyTransform.rotation = Quaternion.Euler(0, yAxisRotateLeft, 0);
+                isFlippingLeft = true;
             }
         }
 
@@ -327,7 +342,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
                     return;
                 }
 
-                else if (_isWallSliding || (_isTouchingWall && !_isGrounded))
+                else if (_isWallSliding || (isTouchingWall && !isGrounded))
                 {
                     return;
                 }
@@ -361,7 +376,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             }
 
             // initiate jump with jump buffering and coyote time
-            if (_jumpBufferTimer > 0f && !_isJumping && (_isGrounded || _coyoteTimer > 0f))
+            if (_jumpBufferTimer > 0f && !_isJumping && (isGrounded || _coyoteTimer > 0f))
             {
                 InitiateJump(1);
 
@@ -373,7 +388,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             }
 
             // double jump
-            else if (_jumpBufferTimer > 0f && (_isJumping || _isWallJumping || _isWallSlideFalling || _isAirDashing || _isDashFastFalling) && !_isTouchingWall && _numberOfJumpsUsed < model.MovementStats.NumberOfJumpsAllowed)
+            else if (_jumpBufferTimer > 0f && (_isJumping || _isWallJumping || _isWallSlideFalling || _isAirDashing || _isDashFastFalling) && !isTouchingWall && _numberOfJumpsUsed < model.MovementStats.NumberOfJumpsAllowed)
             {
                 _isFastFalling = false;
                 InitiateJump(1);
@@ -417,7 +432,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             if (_isJumping)
             {
                 // check for head bump
-                if (_bumpedHead)
+                if (bumpedHead)
                 {
                     _isFastFalling = true;
                 }
@@ -504,7 +519,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         private void LandChecks()
         {
             // land
-            if ((_isJumping || _isFalling || _isWallJumpFalling || _isWallJumping || _isWallSlideFalling || _isWallSliding || _isDashFastFalling) && _isGrounded && _verticalVelocity <= 0f)
+            if ((_isJumping || _isFalling || _isWallJumpFalling || _isWallJumping || _isWallSlideFalling || _isWallSliding || _isDashFastFalling) && isGrounded && _verticalVelocity <= 0f)
             {
                 //## PLAY ANIMATION
                 PlayAnimation_Landing();
@@ -520,7 +535,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
                 _verticalVelocity = Physics2D.gravity.y;
 
-                if (_isDashFastFalling && _isGrounded)
+                if (_isDashFastFalling && isGrounded)
                 {
                     ResetDashValues();
                     return;
@@ -534,7 +549,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         private void Fall()
         {
             // normal gravity while falling
-            if (!_isGrounded && !_isJumping && !_isWallSliding && !_isWallJumping && !_isDashing && _isDashFastFalling)
+            if (!isGrounded && !_isJumping && !_isWallSliding && !_isWallJumping && !_isDashing && _isDashFastFalling)
             {
                 if (!_isFalling)
                 {
@@ -551,7 +566,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         private void WallSlideCheck()
         {
-            if (_isTouchingWall && !_isGrounded && !_isDashing)
+            if (isTouchingWall && !isGrounded && !_isDashing)
             {
                 if (_verticalVelocity < 0f && !_isWallSliding)
                 {
@@ -575,7 +590,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
                 }
             }
 
-            else if (_isWallSliding && !_isTouchingWall && !_isGrounded && !_isWallSlideFalling)
+            else if (_isWallSliding && !isTouchingWall && !isGrounded && !_isWallSlideFalling)
             {
                 _isWallSlideFalling = true;
                 StopWallSlide();
@@ -617,7 +632,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             }
 
             // wall jump fast falling
-            if (_jumpWasReleased && !_isWallSliding && !_isTouchingWall && _isWallJumping)
+            if (_jumpWasReleased && !_isWallSliding && !isTouchingWall && _isWallJumping)
             {
                 if (_verticalVelocity > 0f)
                 {
@@ -659,9 +674,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             _verticalVelocity = model.MovementStats.InitialWallJumpVelocity;
 
             int dirMultiplier = 0;
-            Vector2 hitPoint = _lastWallHit.collider.ClosestPoint(_capsuleCollider.bounds.center);
+            Vector2 hitPoint = lastWallHit.collider.ClosestPoint(capsuleCollider.bounds.center);
 
-            if (hitPoint.x > transform.position.x)
+            if (hitPoint.x > MyTransform.position.x)
             {
                 dirMultiplier = -1;
             }
@@ -686,7 +701,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
                 }
 
                 // hit head
-                if (_bumpedHead)
+                if (bumpedHead)
                 {
                     _isWallJumpFastFalling = true;
                     _useWallJumpMoveStats = false;
@@ -765,7 +780,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         private bool ShouldApplyPostWallJumpBuffer()
         {
-            if (!_isGrounded && (_isTouchingWall || _isWallSliding))
+            if (!isGrounded && (isTouchingWall || _isWallSliding))
             {
                 return true;
             }
@@ -809,13 +824,13 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             if (_dashWasPressed)
             {
                 // ground dash
-                if (_isGrounded && _dashOnGroundTimer < 0 && !_isDashing)
+                if (isGrounded && _dashOnGroundTimer < 0 && !_isDashing)
                 {
                     InitiateDash();
                 }
 
                 // air dash
-                else if (!_isGrounded && !_isDashing && _numberOfDashesUsed < model.MovementStats.NumberOfDashes)
+                else if (!isGrounded && !_isDashing && _numberOfDashesUsed < model.MovementStats.NumberOfDashes)
                 {
                     _isAirDashing = true;
                     InitiateDash();
@@ -868,7 +883,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             // handle direction with NO input
             if (closeDirection == Vector2.zero)
             {
-                if (_isFlippingLeft)
+                if (isFlippingLeft)
                 {
                     closeDirection = Vector2.left;
                 }
@@ -898,7 +913,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
                 _dashTimer += Time.fixedDeltaTime;
                 if (_dashTimer >= model.MovementStats.DashTime)
                 {
-                    if (_isGrounded)
+                    if (isGrounded)
                     {
                         ResetDashes();
                     }
@@ -911,7 +926,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
                         _dashFastFallTime = 0f;
                         _dashFastFallReleaseSpeed = _verticalVelocity;
 
-                        if (!_isGrounded)
+                        if (!isGrounded)
                         {
                             _isDashFastFalling = true;
                         }
@@ -954,7 +969,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         #endregion
 
-        #region Collision Checks
+        /*#region Collision Checks
 
         private void CollisionChesks()
         {
@@ -965,16 +980,16 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         private void IsGrounded()
         {
-            Vector2 boxCastOrigin = new Vector2(_boxCollider.bounds.center.x, _boxCollider.bounds.min.y);
-            Vector2 boxCastSize = new Vector2(_boxCollider.bounds.size.x, model.MovementStats.GroundDetectionRayLength);
+            Vector2 boxCastOrigin = new Vector2(boxCollider.bounds.center.x, boxCollider.bounds.min.y);
+            Vector2 boxCastSize = new Vector2(boxCollider.bounds.size.x, model.MovementStats.GroundDetectionRayLength);
 
             _groundHit = Physics2D.BoxCast(boxCastOrigin, boxCastSize, 0f, Vector2.down, model.MovementStats.GroundDetectionRayLength, model.MovementStats.GroundLayer);
-            _isGrounded = _groundHit.collider != null;
+            isGrounded = _groundHit.collider != null;
 
             if (model.MovementStats.DebugShowIsGroundedBox)
             {
                 Color rayColor = Color.red;
-                if (_isGrounded)
+                if (isGrounded)
                     rayColor = Color.green;
                 else
                     rayColor = Color.red;
@@ -988,16 +1003,16 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         private void BumpHead()
         {
-            Vector2 boxCastOrigin = new Vector2(_capsuleCollider.bounds.center.x, _capsuleCollider.bounds.max.y);
-            Vector2 boxCastSize = new Vector2(_boxCollider.bounds.size.x * model.MovementStats.HeadWidth, model.MovementStats.HeadDetectionRayLength);
+            Vector2 boxCastOrigin = new Vector2(capsuleCollider.bounds.center.x, capsuleCollider.bounds.max.y);
+            Vector2 boxCastSize = new Vector2(boxCollider.bounds.size.x * model.MovementStats.HeadWidth, model.MovementStats.HeadDetectionRayLength);
 
             _headHit = Physics2D.BoxCast(boxCastOrigin, boxCastSize, 0f, Vector2.up, model.MovementStats.HeadDetectionRayLength, model.MovementStats.GroundLayer);
-            _bumpedHead = _headHit.collider != null;
+            bumpedHead = _headHit.collider != null;
 
             if (model.MovementStats.DebugShowHeadBumpBox)
             {
                 Color rayColor = Color.red;
-                if (_bumpedHead)
+                if (bumpedHead)
                     rayColor = Color.green;
                 else
                     rayColor = Color.red;
@@ -1014,36 +1029,36 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         private void IsTouchingWall()
         {
             float originEndPoint = 0f;
-            if (_isFlippingLeft)
+            if (isFlippingLeft)
             {
-                originEndPoint = _capsuleCollider.bounds.min.x;
+                originEndPoint = capsuleCollider.bounds.min.x;
             }
             else
             {
-                originEndPoint = _capsuleCollider.bounds.max.x;
+                originEndPoint = capsuleCollider.bounds.max.x;
             }
 
-            float adjustedHeight = _capsuleCollider.size.y * model.MovementStats.WallDetectionRayHeightMultiplier;
+            float adjustedHeight = capsuleCollider.size.y * model.MovementStats.WallDetectionRayHeightMultiplier;
 
-            Vector2 boxCastOrigin = new Vector2(originEndPoint, _capsuleCollider.bounds.center.y);
+            Vector2 boxCastOrigin = new Vector2(originEndPoint, capsuleCollider.bounds.center.y);
             Vector2 boxCastSize = new Vector2(model.MovementStats.WallDetectionRayLength, adjustedHeight);
 
-            _wallHit = Physics2D.BoxCast(boxCastOrigin, boxCastSize, 0f, transform.right, model.MovementStats.WallDetectionRayLength, model.MovementStats.GroundLayer);
+            _wallHit = Physics2D.BoxCast(boxCastOrigin, boxCastSize, 0f, MyTransform.right, model.MovementStats.WallDetectionRayLength, model.MovementStats.GroundLayer);
 
             if (_wallHit.collider != null)
             {
-                _lastWallHit = _wallHit;
-                _isTouchingWall = true;
+                lastWallHit = _wallHit;
+                isTouchingWall = true;
             }
             else
             {
-                _isTouchingWall = false;
+                isTouchingWall = false;
             }
 
             if (model.MovementStats.DebugShowWallHitBox)
             {
                 Color rayColor = Color.red;
-                if (_isGrounded)
+                if (isGrounded)
                     rayColor = Color.green;
                 else
                     rayColor = Color.red;
@@ -1061,7 +1076,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             }
         }
 
-        #endregion
+        #endregion*/
 
         #region Timer
 
@@ -1071,7 +1086,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             _jumpBufferTimer -= Time.deltaTime;
 
             // jump coyote time
-            if (!_isGrounded)
+            if (!isGrounded)
             {
                 _coyoteTimer -= Time.deltaTime;
             }
@@ -1087,7 +1102,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             }
 
             // dash timer
-            if (_isGrounded)
+            if (isGrounded)
             {
                 _dashOnGroundTimer -= Time.deltaTime;
             }
@@ -1110,7 +1125,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
                 _verticalVelocity = Mathf.Clamp(_verticalVelocity, -50, 50f);
             }
 
-            _rigidbody.velocity = new Vector2(_horizontalVelocity, _verticalVelocity);
+            rigidbody_.velocity = new Vector2(_horizontalVelocity, _verticalVelocity);
         }
 
         #endregion
@@ -1146,18 +1161,15 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         public void SpawnSlash()
         {
-            Vector2 attackDirection = (Vector2)(_attackPointTransform.position - transform.position);
+            Vector2 attackDirection = (Vector2)(_attackPointTransform.position - MyTransform.position);
 
             float angle = Mathf.Atan2(attackDirection.y, attackDirection.x) * Mathf.Rad2Deg;
             Quaternion attackRotation = Quaternion.Euler(new Vector3(0, 0, angle));
 
-            if (_isFlippingLeft)
+            if (isFlippingLeft)
             {
                 attackRotation = Quaternion.Euler(-180, attackRotation.eulerAngles.y, attackRotation.eulerAngles.z);
             }
-
-            //## 
-            SoundManager.Instance.PlaySound(SoundType.Sword_Slash_Normal_1);
             
             //## 
             PoolPrefab slashPrefab = MultipleObjectPool.Instance.GetPoolObject(model.AttackStats.AttackList[_attackIndex], rotation: attackRotation, parent: _attackPointTransform);
@@ -1208,6 +1220,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         }
 
         #endregion
+
 
     }
 
