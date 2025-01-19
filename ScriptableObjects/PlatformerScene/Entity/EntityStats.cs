@@ -17,6 +17,11 @@ namespace HIEU_NL.Platformer.SO.Entity
 
         //# HEALTH
         [field: SerializeField, BoxGroup("HEALTH")] public int MaxHealth { get; private set; } = 100;
+        
+        //# DEBUG
+        public bool DebugShowIsGroundedBox;
+        public bool DebugShowHeadBumpBox;
+        public bool DebugShowWallHitBox;
 
         protected virtual void Reset()
         {

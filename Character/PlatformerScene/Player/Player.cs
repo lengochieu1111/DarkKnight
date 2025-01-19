@@ -12,10 +12,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
     public class Player : MVC_Controller<PlayerModel, PlayerView>
     {
-
         private PlatformerPLayerInputActions _inputActions;
-        
-        public Transform MyTransform { get; protected set; }
 
         [BoxGroup("Animator")]
         [SerializeField] private Animator _animator;
@@ -39,20 +36,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         [BoxGroup("Move")]
         [SerializeField] private float _horizontalVelocity;
 
-        /*[BoxGroup("Flip")]
-        [SerializeField] private bool isFlippingLeft;
-
-        [BoxGroup("Collider")]
-        [SerializeField] private CapsuleCollider2D capsuleCollider;
-        [SerializeField] private BoxCollider2D boxCollider;
-
-        [SerializeField] private bool isGrounded;
-        [SerializeField] private bool bumpedHead;
-        [SerializeField] private bool isTouchingWall;
-        private RaycastHit2D _groundHit;
-        private RaycastHit2D _headHit;
-        private RaycastHit2D _wallHit;
-        private RaycastHit2D lastWallHit;*/
 
         [BoxGroup("Jump")]
         [SerializeField] private float _verticalVelocity;
@@ -206,13 +189,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         #endregion
 
         #region SETUP/RESET COMPONENT/VALUE
-
-        protected override void SetupValues()
-        {
-            base.SetupValues();
-
-            MyTransform = transform;
-        }
 
         protected override void ResetValues()
         {

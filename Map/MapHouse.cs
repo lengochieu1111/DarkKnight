@@ -10,6 +10,15 @@ namespace HIEU_NL.Platformer.Script.Map
         [field: SerializeField, BoxGroup("TYPE")] public EMapHouseType MapHouseType { get; private set; }
         [field: SerializeField, BoxGroup("TYPE"), ReadOnly] public List<MapPlacementPoint> MapPlacementPointList;
 
+        protected override void SetupValues()
+        {
+            base.SetupValues();
+            
+            //##
+            LoadMapPlacementPoint();
+
+        }
+
         #region MapPlacementPoint
 
         [Button]

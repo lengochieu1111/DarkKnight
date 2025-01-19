@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace HIEU_NL.Platformer.Script.GameMode
+namespace HIEU_NL.Platformer.Script.Game
 {
     using HIEU_NL.Platformer.Script.Map;
     

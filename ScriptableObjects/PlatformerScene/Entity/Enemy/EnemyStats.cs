@@ -15,11 +15,9 @@ namespace HIEU_NL.Platformer.SO.Entity.Enemy
 
         //## PATROL
         [field: SerializeField, BoxGroup("PATROL")] public float PatrolSpeed { get; private set; } = 1f;
-        [field: SerializeField, BoxGroup("PATROL")] public float PatrolRadius { get; private set; } = 5f;
         
         //## CHASE
         [field: SerializeField, BoxGroup("CHASE")] public float ChaseSpeed { get; private set; } = 2f;
-        [field: SerializeField, BoxGroup("CHASE")] public float ChaseRadius { get; private set; } = 5f;
 
         //## ATTACK
         [field: SerializeField, BoxGroup("ATTACK")] public LayerMask AttackLayer { get; private set; }

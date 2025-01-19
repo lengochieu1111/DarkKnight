@@ -1,8 +1,10 @@
 using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Platformer.Script.Game;
 using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.SO.Entity.Enemy;
+using HIEU_NL.Utilities;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -11,7 +13,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
     using DesignPatterns.StateMachine;
     using static HIEU_NL.Utilities.ParameterExtensions.Animation;
     
-    [RequireComponent(typeof(Animator), typeof(Rigidbody2D))]
     [RequireComponent(typeof(CapsuleCollider2D), typeof(BoxCollider2D))]
     public abstract class BaseEnemy : BaseEntity, IAttackable
     {
@@ -42,8 +43,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         //## CHASE
         [SerializeField, Foldout("Chase")] protected bool isChasing;
         [SerializeField, Foldout("Chase")] protected Transform targetTransform;
-        public Vector3 LeftChasePosition { get; protected set; }
-        public Vector3 RightChaselPosition { get; protected set; }
         public Transform TargetTransform => targetTransform;
 
         //## ATTACK
@@ -142,13 +141,20 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         {
             base.ResetValues();
             
-            // targetTransform = GameMode.Instance.GetPlayer().MyTransform;
+            targetTransform = GameMode.Instance.PlayerSection.Player.MyTransform;
             
             //##
-            LeftPatrolPosition = new Vector3 (MyTransform.position.x - Stats.PatrolRadius, MyTransform.position.y);
-            RightPatrolPosition = new Vector3 (MyTransform.position.x + Stats.PatrolRadius, MyTransform.position.y);
-            LeftChasePosition = new Vector3 (MyTransform.position.x - Stats.ChaseRadius, MyTransform.position.y);
-            RightChaselPosition = new Vector3 (MyTransform.position.x + Stats.ChaseRadius, MyTransform.position.y);
+            if (MapPlacementPoint.IsValid() && MapPlacementPoint.DestinationPointArray.IsValid()
+                && MapPlacementPoint.DestinationPointArray[0].IsValid() && MapPlacementPoint.DestinationPointArray[1].IsValid())
+            {
+                LeftPatrolPosition = MapPlacementPoint.DestinationPointArray[0].transform.position;
+                RightPatrolPosition = MapPlacementPoint.DestinationPointArray[1].transform.position;
+            }
+            else
+            {
+                LeftPatrolPosition = transform.position.Add(x: -4);
+                RightPatrolPosition = transform.position.Add(x: 4);
+            }
 
             /*
             Debug.DrawLine((Vector3)LeftPatrolPosition, (Vector3)LeftPatrolPosition + Vector3.up * 5, Color.green, 100f);
@@ -340,8 +346,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
 
         public virtual bool PlayerInChaseRange()
         {
-            return targetTransform.position.x > LeftChasePosition.x
-                && targetTransform.position.x < RightChaselPosition.x;
+            return targetTransform.position.x > LeftPatrolPosition.x
+                && targetTransform.position.x < RightPatrolPosition.x;
         }
             
         public virtual bool PlayerInAttackRange()

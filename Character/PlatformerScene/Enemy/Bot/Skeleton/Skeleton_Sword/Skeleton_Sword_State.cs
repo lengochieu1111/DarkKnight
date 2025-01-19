@@ -93,8 +93,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Skeleton_Sword
             private bool HasReachToDestination()
             {
                 return owner.IsFlippingLeft && owner.MyTransform.position.x <= owner.LeftPatrolPosition.x
-                    || !owner.IsFlippingLeft && owner.MyTransform.position.x >= owner.RightPatrolPosition.x
-                    || owner.IsTouchingWall;
+                       || !owner.IsFlippingLeft && owner.MyTransform.position.x >= owner.RightPatrolPosition.x;
+                // || owner.IsTouchingWall;
             }
     
         }

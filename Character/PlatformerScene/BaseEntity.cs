@@ -16,7 +16,9 @@ namespace HIEU_NL.Platformer.Script.Entity
         public event EventHandler<HitData> OnTakeDamage;
         public event EventHandler OnDead;
         
-        [field: SerializeField] public EMapHouseType MapHouseType { get; private set; }
+        [field: SerializeField, BoxGroup("MAP HOUSE")] public EMapHouseType MapHouseType { get; private set; }
+
+        [field: SerializeField, BoxGroup("MAP HOUSE"), ReadOnly] public MapPlacementPoint MapPlacementPoint;
 
         //# SELF
         public Transform MyTransform => transform;
@@ -51,7 +53,7 @@ namespace HIEU_NL.Platformer.Script.Entity
         protected RaycastHit2D wallHit;
         protected RaycastHit2D lastWallHit;
         public bool IsTouchingWall => isTouchingWall;
-
+            
         #region UNITY CORE
         
         protected virtual void FixedUpdate()
@@ -99,16 +101,19 @@ namespace HIEU_NL.Platformer.Script.Entity
             groundHit = Physics2D.BoxCast(boxCenter, boxSize, 0f, Vector2.down, stats.GroundDetectionRayLength, stats.TerrainLayer);
             isGrounded = groundHit.collider != null;
 
-/*            Color rayColor = Color.red;
-            if (_isGrounded)
-                rayColor = Color.green;
-            else
-                rayColor = Color.red;
+            if (stats.DebugShowIsGroundedBox)
+            {
+                Color rayColor = Color.red;
+                if (isGrounded)
+                    rayColor = Color.green;
+                else
+                    rayColor = Color.red;
 
-            Debug.DrawRay(new Vector2((boxCenter.x - boxSize.x / 2), boxCenter.y), Vector2.down * stats.GroundDetectionRayLength, rayColor);
-            Debug.DrawRay(new Vector2((boxCenter.x + boxSize.x / 2), boxCenter.y), Vector2.down * stats.GroundDetectionRayLength, rayColor);
-            Debug.DrawRay(new Vector2((boxCenter.x - boxSize.x / 2), boxCenter.y - stats.GroundDetectionRayLength), Vector2.right * boxSize.x, rayColor);*/
-
+                Debug.DrawRay(new Vector2((boxCenter.x - boxSize.x / 2), boxCenter.y), Vector2.down * stats.GroundDetectionRayLength, rayColor);
+                Debug.DrawRay(new Vector2((boxCenter.x + boxSize.x / 2), boxCenter.y), Vector2.down * stats.GroundDetectionRayLength, rayColor);
+                Debug.DrawRay(new Vector2((boxCenter.x - boxSize.x / 2), boxCenter.y - stats.GroundDetectionRayLength), Vector2.right * boxSize.x, rayColor);
+            }
+            
         }
         
         protected virtual void Check_BumpedHead()
@@ -119,16 +124,20 @@ namespace HIEU_NL.Platformer.Script.Entity
             headHit = Physics2D.BoxCast(boxCenter, boxSize, 0f, Vector2.up, stats.HeadDetectionRayLength, stats.TerrainLayer);
             bumpedHead = headHit.collider != null;
 
-/*            Color rayColor = Color.red;
-            if (_isGrounded)
-                rayColor = Color.green;
-            else
-                rayColor = Color.red;
+            if (stats.DebugShowHeadBumpBox)
+            {
+                Color rayColor = Color.red;
+                if (bumpedHead)
+                    rayColor = Color.green;
+                else
+                    rayColor = Color.red;
 
-            Debug.DrawRay(new Vector2((boxCenter.x - boxSize.x / 2 * stats.HeadWidth), boxCenter.y), Vector2.up * stats.HeadDetectionRayLength, rayColor);
-            Debug.DrawRay(new Vector2((boxCenter.x + (boxSize.x / 2) * stats.HeadWidth), boxCenter.y), Vector2.up * stats.HeadDetectionRayLength, rayColor);
-            Debug.DrawRay(new Vector2((boxCenter.x - boxSize.x / 2 * stats.HeadWidth), boxCenter.y + stats.HeadDetectionRayLength), Vector2.right * boxSize.x * stats.HeadWidth, rayColor);*/
+                Debug.DrawRay(new Vector2((boxCenter.x - boxSize.x / 2 * stats.HeadWidth), boxCenter.y), Vector2.up * stats.HeadDetectionRayLength, rayColor);
+                Debug.DrawRay(new Vector2((boxCenter.x + (boxSize.x / 2) * stats.HeadWidth), boxCenter.y), Vector2.up * stats.HeadDetectionRayLength, rayColor);
+                Debug.DrawRay(new Vector2((boxCenter.x - boxSize.x / 2 * stats.HeadWidth), boxCenter.y + stats.HeadDetectionRayLength), Vector2.right * boxSize.x * stats.HeadWidth, rayColor);
 
+            }
+            
         }
 
         protected virtual void Check_IsTouchingWall()
@@ -160,21 +169,24 @@ namespace HIEU_NL.Platformer.Script.Entity
                 isTouchingWall = false;
             }
 
-            /*Color rayColor = Color.red;
-            if (_isGrounded)
-                rayColor = Color.green;
-            else
-                rayColor = Color.red;
+            if (stats.DebugShowWallHitBox)
+            {
+                Color rayColor = Color.red;
+                if (isTouchingWall)
+                    rayColor = Color.green;
+                else
+                    rayColor = Color.red;
 
-            Vector2 boxBottomLeft = new Vector2(boxCastOrigin.x - boxCastSize.x / 2, boxCastOrigin.y - boxCastSize.y / 2);
-            Vector2 boxBottomRight = new Vector2(boxCastOrigin.x + boxCastSize.x / 2, boxCastOrigin.y - boxCastSize.y / 2);
-            Vector2 boxTopLeft = new Vector2(boxCastOrigin.x - boxCastSize.x / 2, boxCastOrigin.y + boxCastSize.y / 2);
-            Vector2 boxTopRight = new Vector2(boxCastOrigin.x + boxCastSize.x / 2, boxCastOrigin.y + boxCastSize.y / 2);
+                Vector2 boxBottomLeft = new Vector2(boxCastOrigin.x - boxCastSize.x / 2, boxCastOrigin.y - boxCastSize.y / 2);
+                Vector2 boxBottomRight = new Vector2(boxCastOrigin.x + boxCastSize.x / 2, boxCastOrigin.y - boxCastSize.y / 2);
+                Vector2 boxTopLeft = new Vector2(boxCastOrigin.x - boxCastSize.x / 2, boxCastOrigin.y + boxCastSize.y / 2);
+                Vector2 boxTopRight = new Vector2(boxCastOrigin.x + boxCastSize.x / 2, boxCastOrigin.y + boxCastSize.y / 2);
 
-            Debug.DrawRay(boxBottomLeft, boxBottomRight, rayColor);
-            Debug.DrawRay(boxBottomRight, boxTopRight, rayColor);
-            Debug.DrawRay(boxTopRight, boxTopLeft, rayColor);
-            Debug.DrawRay(boxTopLeft, boxBottomLeft, rayColor);*/
+                Debug.DrawRay(boxBottomLeft, boxBottomRight, rayColor);
+                Debug.DrawRay(boxBottomRight, boxTopRight, rayColor);
+                Debug.DrawRay(boxTopRight, boxTopLeft, rayColor);
+                Debug.DrawRay(boxTopLeft, boxBottomLeft, rayColor);
+            }
 
         }         
 
@@ -185,6 +197,7 @@ namespace HIEU_NL.Platformer.Script.Entity
         protected virtual void ApplyGravity()
         {
             float verticalVelocity = 0f;
+            float horizontalVelocity = 0f;
             if (isGrounded)
             {
                 verticalVelocity = -0.01f;
@@ -194,7 +207,7 @@ namespace HIEU_NL.Platformer.Script.Entity
                 verticalVelocity = Physics2D.gravity.y;
             }
 
-            rigidbody_.velocity = new Vector2(rigidbody_.velocity.x, verticalVelocity);
+            rigidbody_.velocity = new Vector2(horizontalVelocity, verticalVelocity);
         }
         
         #endregion
@@ -228,6 +241,11 @@ namespace HIEU_NL.Platformer.Script.Entity
         #region SETTER/GETTER
 
         public float GetHealthPercentage() { return health * 1f / maxHealth; }
+
+        public void SetMapPlacementPoint(MapPlacementPoint mapPlacementPoint)
+        {
+            MapPlacementPoint = mapPlacementPoint;
+        }
 
         #endregion
 
