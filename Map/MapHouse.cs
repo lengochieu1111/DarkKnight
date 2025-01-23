@@ -8,6 +8,7 @@ namespace HIEU_NL.Platformer.Script.Map
     public partial class MapHouse : RyoMonoBehaviour
     {
         [field: SerializeField, BoxGroup("TYPE")] public EMapHouseType MapHouseType { get; private set; }
+        [field: SerializeField, BoxGroup("TYPE")] public EBotPlacementType BotPlacementType { get; private set; }
         [field: SerializeField, BoxGroup("TYPE"), ReadOnly] public List<MapPlacementPoint> MapPlacementPointList;
 
         protected override void SetupValues()

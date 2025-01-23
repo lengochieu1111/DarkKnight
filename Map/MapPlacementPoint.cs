@@ -5,9 +5,6 @@ namespace HIEU_NL.Platformer.Script.Map
 {
     public class MapPlacementPoint : RyoMonoBehaviour
     {
-        [field: SerializeField, BoxGroup("SPAWN POINT")] public Transform SpawnPoint { get; private set; }
-        [field: SerializeField, BoxGroup("SPAWN POINT")] public Transform[] SpawnPointArray { get; private set; }
-
         [field: SerializeField, BoxGroup("DESTINATION POINT")] public Transform DestinationPoint { get; private set; }
         [field: SerializeField, BoxGroup("DESTINATION POINT")] public Transform[] DestinationPointArray { get; private set; }
 

@@ -17,7 +17,7 @@ namespace HIEU_NL.Platformer.Script.Entity
         public event EventHandler OnDead;
         
         [field: SerializeField, BoxGroup("MAP HOUSE")] public EMapHouseType MapHouseType { get; private set; }
-
+        [field: SerializeField, BoxGroup("MAP HOUSE")] public EBotPlacementType BotPlacementType { get; private set; }
         [field: SerializeField, BoxGroup("MAP HOUSE"), ReadOnly] public MapPlacementPoint MapPlacementPoint;
 
         //# SELF
@@ -204,7 +204,7 @@ namespace HIEU_NL.Platformer.Script.Entity
             }
             else
             {
-                verticalVelocity = Physics2D.gravity.y;
+                verticalVelocity = Physics2D.gravity.y * stats.GravityCoefficient;
             }
 
             rigidbody_.velocity = new Vector2(horizontalVelocity, verticalVelocity);

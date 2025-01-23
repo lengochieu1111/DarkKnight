@@ -46,7 +46,9 @@ namespace HIEU_NL.Platformer.Script.Game
                 List<PoolPrefabType> botTypeList = new();
                 foreach (PoolPrefabAsset poolPrefabAsset in _poolPrefabAssetListSO.PoolPrefabAssetList)
                 {
-                    if (poolPrefabAsset.PoolPrefab is BaseEntity entity && entity.MapHouseType == mapHouse.MapHouseType)
+                    if (poolPrefabAsset.PoolPrefab is BaseEntity entity 
+                        && entity.MapHouseType == mapHouse.MapHouseType
+                        && entity.BotPlacementType == mapHouse.BotPlacementType)
                     {
                         botTypeList.Add(poolPrefabAsset.PrefabType);
                     }

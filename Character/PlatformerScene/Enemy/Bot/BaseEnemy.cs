@@ -37,13 +37,15 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
 
         //## PATROL
         [SerializeField, Foldout("Patrol")] protected bool isPatroling;
-        public Vector3 LeftPatrolPosition { get; protected set; }
-        public Vector3 RightPatrolPosition { get; protected set; }
+        public Vector3 PatrolPositionLeft { get; protected set; }
+        public Vector3 PatrolPositionRight { get; protected set; }
         
         //## CHASE
         [SerializeField, Foldout("Chase")] protected bool isChasing;
         [SerializeField, Foldout("Chase")] protected Transform targetTransform;
         public Transform TargetTransform => targetTransform;
+        public Vector3 ChasePositionBelow { get; protected set; }
+        public Vector3 ChasePositionAbove { get; protected set; }
 
         //## ATTACK
         [SerializeField, Foldout("Attack")] protected bool isAttacking;
@@ -145,15 +147,20 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             
             //##
             if (MapPlacementPoint.IsValid() && MapPlacementPoint.DestinationPointArray.IsValid()
-                && MapPlacementPoint.DestinationPointArray[0].IsValid() && MapPlacementPoint.DestinationPointArray[1].IsValid())
+                && MapPlacementPoint.DestinationPointArray[0].IsValid() && MapPlacementPoint.DestinationPointArray[1].IsValid()
+                && MapPlacementPoint.DestinationPointArray[2].IsValid() && MapPlacementPoint.DestinationPointArray[3].IsValid())
             {
-                LeftPatrolPosition = MapPlacementPoint.DestinationPointArray[0].transform.position;
-                RightPatrolPosition = MapPlacementPoint.DestinationPointArray[1].transform.position;
+                PatrolPositionLeft = MapPlacementPoint.DestinationPointArray[0].transform.position;
+                PatrolPositionRight = MapPlacementPoint.DestinationPointArray[1].transform.position;
+                ChasePositionBelow = MapPlacementPoint.DestinationPointArray[2].transform.position;
+                ChasePositionAbove = MapPlacementPoint.DestinationPointArray[3].transform.position;
             }
             else
             {
-                LeftPatrolPosition = transform.position.Add(x: -4);
-                RightPatrolPosition = transform.position.Add(x: 4);
+                PatrolPositionLeft = transform.position.Add(x: -4);
+                PatrolPositionRight = transform.position.Add(x: 4);
+                ChasePositionBelow = transform.position.Add(y: -4);
+                ChasePositionAbove = transform.position.Add(y: 4);
             }
 
             /*
@@ -346,8 +353,10 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
 
         public virtual bool PlayerInChaseRange()
         {
-            return targetTransform.position.x > LeftPatrolPosition.x
-                && targetTransform.position.x < RightPatrolPosition.x;
+            return targetTransform.position.x > PatrolPositionLeft.x
+                && targetTransform.position.x < PatrolPositionRight.x
+                && targetTransform.position.y > ChasePositionBelow.y
+                && targetTransform.position.y < ChasePositionAbove.y;
         }
             
         public virtual bool PlayerInAttackRange()
@@ -360,8 +369,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             RaycastHit2D hit = Physics2D.BoxCast(boxCenter, boxSize, 0f, Vector2.right, 0f, Stats.AttackLayer);
             return hit.collider != null;
         }
-
-
+        
         #endregion
 
         #region SETTER/GETTER
@@ -393,17 +401,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
 
         #endregion
 
-
-        protected void OnDrawGizmos()
-        {
-            Gizmos.color = Color.yellow;
-            int coefficient = isFlippingLeft ? -1 : 1;
-            coefficient = isBeginFlipLeft ? coefficient * -1 : coefficient;
-            Vector3 boxCenter = new Vector2(transform.position.x + Stats.AttackDataArray[attackIndex].AttackOffsetWidth * coefficient, transform.position.y + Stats.AttackDataArray[attackIndex].AttackOffsetHeight);
-            Vector3 boxSize = new Vector2(Stats.AttackDataArray[attackIndex].AttackRadiusWidth, Stats.AttackDataArray[attackIndex].AttackRangeHeight);
-            Gizmos.DrawWireCube(boxCenter, boxSize);
-        }
-        
         #region IATTACKABLE
 
         public virtual void IBeginAttack()
@@ -475,6 +472,16 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         }
 
         #endregion
+        
+        protected void OnDrawGizmos()
+        {
+            Gizmos.color = Color.yellow;
+            int coefficient = isFlippingLeft ? -1 : 1;
+            coefficient = isBeginFlipLeft ? coefficient * -1 : coefficient;
+            Vector3 boxCenter = new Vector2(transform.position.x + Stats.AttackDataArray[attackIndex].AttackOffsetWidth * coefficient, transform.position.y + Stats.AttackDataArray[attackIndex].AttackOffsetHeight);
+            Vector3 boxSize = new Vector2(Stats.AttackDataArray[attackIndex].AttackRadiusWidth, Stats.AttackDataArray[attackIndex].AttackRangeHeight);
+            Gizmos.DrawWireCube(boxCenter, boxSize);
+        }
 
         
     }

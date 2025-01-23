@@ -14,6 +14,7 @@ namespace HIEU_NL.Platformer.SO.Entity
         [field: SerializeField, BoxGroup("COLLISION CHECK")] public float GroundDetectionRayLength { get; private set; } = 0.02f;
         [field: SerializeField, BoxGroup("COLLISION CHECK")] public float WallDetectionRayLength { get; private set; } = 0.125f;
         [field: SerializeField, BoxGroup("COLLISION CHECK")] public float WallDetectionRayHeightMultiplier { get; private set; } = 0.9f;
+        [field: SerializeField, BoxGroup("COLLISION CHECK")] public float GravityCoefficient { get; private set; } = 0.5f;
 
         //# HEALTH
         [field: SerializeField, BoxGroup("HEALTH")] public int MaxHealth { get; private set; } = 100;
@@ -27,7 +28,7 @@ namespace HIEU_NL.Platformer.SO.Entity
         {
             TerrainLayer = ParameterExtensions.Layers.Terrain;
         }
-        
+
     }
 }
 

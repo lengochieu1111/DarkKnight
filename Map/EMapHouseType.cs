@@ -4,9 +4,8 @@ namespace HIEU_NL.Platformer.Script.Map
     {
         Trap,
 
-        SoldierEnemy,
+        Creatures,
         NormalEnemy,
-        FlyEnemy,
 
         Subboss,
         Boss
