@@ -94,8 +94,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Mosquito
     
             private bool HasReachToDestination()
             {
-                return owner.IsFlippingLeft && owner.MyTransform.position.x <= owner.LeftPatrolPosition.x
-                    || !owner.IsFlippingLeft && owner.MyTransform.position.x >= owner.RightPatrolPosition.x
+                return owner.IsFlippingLeft && owner.MyTransform.position.x <= owner.PatrolPositionLeft.x
+                    || !owner.IsFlippingLeft && owner.MyTransform.position.x >= owner.PatrolPositionRight.x
                     || owner.IsTouchingWall;
             }
     
