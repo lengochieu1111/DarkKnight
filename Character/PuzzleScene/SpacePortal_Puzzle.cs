@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace HIEU_NL.Puzzle.Script.Entity.Character
 {
-    public class SpacePortal_Puzzle : StaticEntity
+    public class SpacePortal_Puzzle : StaticEntity_Puzzle
     {
 
     }

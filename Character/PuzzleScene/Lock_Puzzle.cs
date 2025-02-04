@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace HIEU_NL.Puzzle.Script.Entity.Character
 {
-    public class Lock_Puzzle : StaticEntity
+    public class Lock_Puzzle : StaticEntity_Puzzle
     {
         protected override void ResetValues()
         {
@@ -17,7 +17,7 @@ namespace HIEU_NL.Puzzle.Script.Entity.Character
 
         #region Interaction
 
-        public override void SendInteract(BaseEntity receverEntity, Vector2 senderDirection)
+        public override void SendInteract(BaseEntity_Puzzle receverEntity, Vector2 senderDirection)
         {
             base.SendInteract(receverEntity, senderDirection);
 
@@ -27,7 +27,7 @@ namespace HIEU_NL.Puzzle.Script.Entity.Character
 
         }
 
-        public override void ReceiveInteract(BaseEntity senderEntity, Vector2 receverDirection)
+        public override void ReceiveInteract(BaseEntity_Puzzle senderEntity, Vector2 receverDirection)
         {
             base.ReceiveInteract(senderEntity, receverDirection);
 

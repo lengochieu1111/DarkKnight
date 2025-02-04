@@ -1,29 +1,34 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using HIEU_NL.DesignPatterns.Singleton;
+using HIEU_NL.DesignPatterns.ObjectPool.Single;
 using HIEU_NL.ObjectPool.Audio;
+using NaughtyAttributes;
 
 namespace HIEU_NL.Manager
 {
-    public class SoundManager : PersistentSingleton<SoundManager>
+    public class SoundManager : PersistentSingleObjectPool <SoundEmitter, SoundData, SoundBuilder>
     {
-        [SerializeField] private SoundDataListSO soundDataListSO;
+        [SerializeField, BoxGroup("SOUND DATA")] private SoundDataListSO _soundDataListSO;
 
         public void PlaySound(SoundType soundType)
         {
-            SoundAsset soundAsset = soundDataListSO.SoundDataList.FirstOrDefault(data => data.SoundType == soundType);
+            SoundAsset soundAsset = _soundDataListSO.SoundDataList.FirstOrDefault(data => data.SoundType == soundType);
 
             if (soundAsset != null)
             {
-                SoundPool.Instance.CreatePoolBuilder(soundAsset.SoundData)
+                CreatePoolBuilder(soundAsset.SoundData)
                 .WithRandomPitch()
                 .WithParent(transform)
                 .WithPosition(transform.position)
                 .Activate();
             }
 
+        }
+        
+        protected override SoundBuilder GetNewPoolBuilder(SoundEmitter prefab, SoundData data)
+        {
+            return new SoundBuilder(prefab, data);
         }
 
     }

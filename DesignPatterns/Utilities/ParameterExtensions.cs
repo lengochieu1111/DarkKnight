@@ -29,6 +29,7 @@ namespace HIEU_NL.Utilities
             //##
             public const string USER_FIELD_Name = "Name";
             public const string USER_FIELD_CurrentLevelIndex = "CurrentLevelIndex";
+            public const string USER_FIELD_PuzzleUnlocked = "PuzzleUnlocked";
 
             //##
 

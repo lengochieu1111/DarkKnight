@@ -6,16 +6,16 @@ using UnityEngine;
 
 namespace HIEU_NL.Puzzle.Script.Entity.Enemy
 {
-    public class Enemy_Puzzle : DynamicEntity
+    public class Enemy_Puzzle : DynamicEntity_Puzzle
     {
 
         protected override void MoveCompleted()
         {
             base.MoveCompleted();
 
-            if (this.TryInteractWithStaticEntities(out List<StaticEntity> staticEntitis))
+            if (this.TryInteractWithStaticEntities(out List<StaticEntity_Puzzle> staticEntitis))
             {
-                foreach (StaticEntity entity in staticEntitis)
+                foreach (StaticEntity_Puzzle entity in staticEntitis)
                 {
                     if (entity is Trap_Puzzle)
                     {
@@ -34,7 +34,7 @@ namespace HIEU_NL.Puzzle.Script.Entity.Enemy
             this.HandleDead();
         }
 
-        public override void ReceiveInteract(BaseEntity senderEntity, Vector2 receverDirection)
+        public override void ReceiveInteract(BaseEntity_Puzzle senderEntity, Vector2 receverDirection)
         {
             base.ReceiveInteract(senderEntity, receverDirection);
 

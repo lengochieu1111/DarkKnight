@@ -9,7 +9,7 @@ using System;
 
 public enum Scene
 {
-    DataLoading,
+    Intro,
     Login,
     Preparation,
     MainMenu,
@@ -19,7 +19,6 @@ public enum Scene
 
 public class TransitionManager : PersistentSingleton<TransitionManager>
 {
-
     public event EventHandler LoadingSceneBegin;
     public event EventHandler LoadingSceneFinish;
 
@@ -73,27 +72,7 @@ public class TransitionManager : PersistentSingleton<TransitionManager>
      * 
      */
 
-    public void Load_LoginScene()
-    {
-        Load(Scene.Login);
-    }
-    
-    public void Load_MainMenuScene()
-    {
-        Load(Scene.MainMenu);
-    }
-
-    public void Load_PuzzleScene()
-    {
-        Load(Scene.Puzzle);
-    }
-
-    public void Load_PlatformerScene()
-    {
-        Load(Scene.Platformer);
-    }
-
-    private void Load(Scene scene)
+    public void LoadScene(Scene scene)
     {
         _scene = scene;
 

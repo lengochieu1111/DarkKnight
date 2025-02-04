@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using HIEU_NL.DesignPatterns.Singleton;
 
@@ -7,6 +5,7 @@ public class MainMenuCanvas : Singleton<MainMenuCanvas>
 {
     [SerializeField] private MainMenuUI _mainMenuUI;
     [SerializeField] private OptionsUI_MainMenuCanvas _optionsUI;
+    [SerializeField] private SelectMapUI_MainMenuCanvas _selectMapUI;
 
     #region SETUP COMPONENT/VALUES
 
@@ -14,14 +13,14 @@ public class MainMenuCanvas : Singleton<MainMenuCanvas>
     {
         base.SetupComponents();
 
-        if (this._mainMenuUI == null)
+        if (_mainMenuUI == null)
         {
-            this._mainMenuUI = this.GetComponentInChildren<MainMenuUI>(true);
+            _mainMenuUI = GetComponentInChildren<MainMenuUI>(true);
         }
 
-        if (this._optionsUI == null)
+        if (_optionsUI == null)
         {
-            this._optionsUI = this.GetComponentInChildren<OptionsUI_MainMenuCanvas>(true);
+            _optionsUI = GetComponentInChildren<OptionsUI_MainMenuCanvas>(true);
         }
 
     }
@@ -31,8 +30,9 @@ public class MainMenuCanvas : Singleton<MainMenuCanvas>
     {
         base.SetupComponents();
 
-        this.ShowMainMenuUI();
-        this.HideOptionsUI();
+        ShowMainMenuUI();
+        HideOptionsUI();
+        HideSelectMapUI();
     }
 
     #endregion
@@ -41,22 +41,32 @@ public class MainMenuCanvas : Singleton<MainMenuCanvas>
 
     public void ShowOptionsUI()
     {
-        this._optionsUI.Show();
+        _optionsUI.Show();
     }
     
     public void HideOptionsUI()
     {
-        this._optionsUI.Hide();
+        _optionsUI.Hide();
     }
     
     public void ShowMainMenuUI()
     {
-        this._mainMenuUI.Show();
+        _mainMenuUI.Show();
     }
     
     public void HideMainMenuUI()
     {
-        this._mainMenuUI.Hide();
+        _mainMenuUI.Hide();
+    }
+    
+    public void ShowSelectMapUI()
+    {
+        _selectMapUI.Show();
+    }
+    
+    public void HideSelectMapUI()
+    {
+        _selectMapUI.Hide();
     }
 
     #endregion

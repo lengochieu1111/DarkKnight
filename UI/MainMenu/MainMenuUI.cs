@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class MainMenuUI : RyoMonoBehaviour
 {
     [SerializeField] private Button _startGameButton;
-    [SerializeField] private Button _selectLevelButton;
+    [SerializeField] private Button _selectMapButton;
     [SerializeField] private Button _shopButton;
     [SerializeField] private Button _optionsButton;
     [SerializeField] private Button _logoutButton;
@@ -18,29 +19,29 @@ public class MainMenuUI : RyoMonoBehaviour
     {
         base.Awake();
 
-        this._startGameButton.onClick.AddListener(() =>
+        _startGameButton.onClick.AddListener(() =>
         {
-            this.StartGame();
+            StartGame();
         });
 
-        this._selectLevelButton.onClick.AddListener(() =>
+        _selectMapButton.onClick.AddListener(() =>
         {
-            this.SelectLevel();
+            SelectLevel();
         });
         
-        this._shopButton.onClick.AddListener(() =>
+        _shopButton.onClick.AddListener(() =>
         {
-            this.Shop();
+            Shop();
         });
 
-        this._optionsButton.onClick.AddListener(() =>
+        _optionsButton.onClick.AddListener(() =>
         {
-            this.Options();
+            Options();
         });
 
-        this._logoutButton.onClick.AddListener(() =>
+        _logoutButton.onClick.AddListener(() =>
         {
-            this.LogoutButton();
+            LogoutButton();
         });
 
     }
@@ -56,34 +57,34 @@ public class MainMenuUI : RyoMonoBehaviour
     {
         base.SetupComponents();
 
-        if (this._startGameButton == null)
+        if (_startGameButton == null)
         {
-            this._startGameButton = this.transform.Find("StartGameButton")?.GetComponent<Button>();
+            _startGameButton = transform.Find("StartGameButton")?.GetComponent<Button>();
         }
 
-        if (this._selectLevelButton == null)
+        if (_selectMapButton == null)
         {
-            this._selectLevelButton = this.transform.Find("SelectLevelButton")?.GetComponent<Button>();
+            _selectMapButton = transform.Find("SelectLevelButton")?.GetComponent<Button>();
         }
         
-        if (this._shopButton == null)
+        if (_shopButton == null)
         {
-            this._shopButton = this.transform.Find("ShopButton")?.GetComponent<Button>();
+            _shopButton = transform.Find("ShopButton")?.GetComponent<Button>();
         }
 
-        if (this._optionsButton == null)
+        if (_optionsButton == null)
         {
-            this._optionsButton = this.transform.Find("OptionsButton")?.GetComponent<Button>();
+            _optionsButton = transform.Find("OptionsButton")?.GetComponent<Button>();
         }
 
-        if (this._logoutButton == null)
+        if (_logoutButton == null)
         {
-            this._logoutButton = this.transform.Find("LogoutButton")?.GetComponent<Button>();
+            _logoutButton = transform.Find("LogoutButton")?.GetComponent<Button>();
         }
         
-        if (this._userNameText == null)
+        if (_userNameText == null)
         {
-            this._userNameText = this.transform.Find("UserNameText")?.GetComponent<TextMeshProUGUI>();
+            _userNameText = transform.Find("UserNameText")?.GetComponent<TextMeshProUGUI>();
         }
 
     }
@@ -97,7 +98,7 @@ public class MainMenuUI : RyoMonoBehaviour
 
     private void SelectLevel()
     {
-        Debug.Log("SelectLevel");
+        MainMenuCanvas.Instance.ShowSelectMapUI();
     }
 
     private void Shop()
@@ -121,7 +122,7 @@ public class MainMenuUI : RyoMonoBehaviour
 
     private void UpdateVisual_UserNameText()
     {
-        _userNameText.text = FirebaseManager.Instance.CurrentUser.Name;
+        // _userNameText.text = FirebaseManager.Instance.CurrentUser.Name;
     }
 
     #endregion
@@ -130,12 +131,12 @@ public class MainMenuUI : RyoMonoBehaviour
 
     public void Show()
     {
-        this.gameObject.SetActive(true);
+        gameObject.SetActive(true);
     }
 
     public void Hide()
     {
-        this.gameObject.SetActive(false);
+        gameObject.SetActive(false);
     }
 
     #endregion

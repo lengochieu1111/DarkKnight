@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace HIEU_NL.Platformer.Script.Entity.Player
 {
-    public class PlayerView : MVC_View<Player>
+    public class PlayerView : MVC_View<Player_Platformer>
     {
         public void AE_RequestSlash()
         {

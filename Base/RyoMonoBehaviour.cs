@@ -7,22 +7,24 @@ public abstract class RyoMonoBehaviour : MonoBehaviour
 
     protected virtual void Awake()
     {
-        this.SetupComponents();
-        this.SetupValues();
+        InitializeValues();
+        SetupComponents();
+        SetupValues();
     }
 
     protected virtual void OnEnable()
     {
-        this.ResetComponents();
-        this.ResetValues();
+        ResetComponents();
+        ResetValues();
     }
 
     protected virtual void Reset()
     {
-        this.SetupComponents();
-        this.SetupValues();
-        this.ResetComponents();
-        this.ResetValues();
+        InitializeValues();
+        SetupComponents();
+        SetupValues();
+        ResetComponents();
+        ResetValues();
     }
 
     protected virtual void Start() { }
@@ -37,6 +39,7 @@ public abstract class RyoMonoBehaviour : MonoBehaviour
 
     #region SETUP/RESET
 
+    protected virtual void InitializeValues() { }   
     protected virtual void SetupComponents() { }   
     
     protected virtual void SetupValues() { }    

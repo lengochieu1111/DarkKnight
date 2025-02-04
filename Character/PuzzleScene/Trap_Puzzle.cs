@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace HIEU_NL.Puzzle.Script.Entity.Character
 {
-    public class Trap_Puzzle : StaticEntity
+    public class Trap_Puzzle : StaticEntity_Puzzle
     {
 
     }

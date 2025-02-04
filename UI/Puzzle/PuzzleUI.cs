@@ -1,6 +1,7 @@
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Puzzle.Script.Game;
 using TMPro;
 using UnityEngine;
 
@@ -33,7 +34,7 @@ public class PuzzleUI : RyoMonoBehaviour
 
     private void Update()
     {
-        if (GameManager_Puzzle.Instance.IsGamePlaying())
+        if (GameMode_Puzzle.Instance.IsGamePlaying())
         {
             this.UpdateVisual();
         }
@@ -42,7 +43,7 @@ public class PuzzleUI : RyoMonoBehaviour
     private void UpdateVisual()
     {
         // action
-        string newActionText = GameManager_Puzzle.Instance.GetGameActionCounter().ToString();
+        string newActionText = GameMode_Puzzle.Instance.GetGameActionCounter().ToString();
         if (newActionText != this._actionText.text)
         {
             this._actionText.transform.DOScale(1.2f, 0.3f).SetEase(Ease.OutQuad).OnComplete(() =>
@@ -53,7 +54,7 @@ public class PuzzleUI : RyoMonoBehaviour
         }
 
         // time
-        int timeToInt = Mathf.CeilToInt(GameManager_Puzzle.Instance.GetGamePlayTimer());
+        int timeToInt = Mathf.CeilToInt(GameMode_Puzzle.Instance.GetGamePlayTimer());
         int minutes = timeToInt / 60;
         int seconds = timeToInt % 60;
         string newTimeText = string.Format("{0:D2}:{1:D2}", minutes, seconds);
@@ -68,7 +69,7 @@ public class PuzzleUI : RyoMonoBehaviour
         }
 
         // level
-        int levelIndex = GameManager_Puzzle.Instance.GetLevelIndex() + 1;
+        int levelIndex = GameMode_Puzzle.Instance.GetLevelIndex() + 1;
         string newlevelText = this.IntToRoman(levelIndex).ToString();
         this._levelText.text = newlevelText;
     }

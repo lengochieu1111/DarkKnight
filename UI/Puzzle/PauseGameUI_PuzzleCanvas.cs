@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Puzzle.Script.Game;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -124,9 +125,9 @@ public class PauseGameUI_PuzzleCanvas : RyoMonoBehaviour
 
     private void Exit()
     {
-        if (GameManager_Puzzle.Instance.IsGamePaused())
+        if (GameMode_Puzzle.Instance.IsGamePaused())
         {
-            GameManager_Puzzle.Instance.TogglePauseGame();
+            GameMode_Puzzle.Instance.TogglePauseGame();
         }
 
         this.Hide();

@@ -19,11 +19,13 @@ public class User
 {
     [FirestoreProperty] public string Name { get; set; }
     [FirestoreProperty] public int CurrentLevelIndex { get; set; }
+    [FirestoreProperty] public bool PuzzleUnlocked { get; set; }
 
-    public User(string name = STRING_EMPTY, int currentLevelIndex = 0)
+    public User(string name = STRING_EMPTY, int currentLevelIndex = 0, bool puzzleUnlocked = false)
     {
         Name = name;
         CurrentLevelIndex = currentLevelIndex;
+        PuzzleUnlocked = puzzleUnlocked;
     }
 
 }
@@ -51,11 +53,27 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     // User
     private CollectionReference _userCollectionReference;
     public User CurrentUser { get; private set; }
-    public bool HasUserSaved { get; private set; }
+    public int CurrentSelectedLevel { get; private set; }
+
 
     // Aplication
     private CollectionReference _applicationCollectionReference;
     public Audio CurrentAudio { get; private set; }
+
+    #region SETUP/RESET
+    
+    protected override void ResetValues()
+    {
+        base.ResetValues();
+        
+        //##
+        CurrentUser = null;
+        CurrentAudio = null;
+        CurrentSelectedLevel = 0;
+    }
+    
+    #endregion
+
 
     protected override void Start()
     {
@@ -85,7 +103,9 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     private async void GetDataApilication()
     {
         await GetAudio();
-        HasUserSaved = await GetUserSaved();
+        await GetUserSaved();
+
+        CurrentSelectedLevel = CurrentUser.CurrentLevelIndex;
 
         OnGetDataCompleted?.Invoke(this, EventArgs.Empty);
 
@@ -132,6 +152,8 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
             {
                 { USER_FIELD_Name, CurrentUser.Name },
                 { USER_FIELD_CurrentLevelIndex, CurrentUser.CurrentLevelIndex },
+                { USER_FIELD_PuzzleUnlocked, CurrentUser.PuzzleUnlocked },
+
             });
 
             //
@@ -148,6 +170,8 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
         {
             { USER_FIELD_Name, _user.Name },
             { USER_FIELD_CurrentLevelIndex, _user.CurrentLevelIndex },
+            { USER_FIELD_PuzzleUnlocked , CurrentUser.PuzzleUnlocked },
+
         });
     }*/
     
@@ -190,6 +214,7 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
                 {
                     Name = userData.ContainsKey(USER_FIELD_Name) ? userData[USER_FIELD_Name].ToString() : string.Empty,
                     CurrentLevelIndex = userData.ContainsKey(USER_FIELD_CurrentLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentLevelIndex]) : 0,
+                    PuzzleUnlocked = userData.ContainsKey(USER_FIELD_PuzzleUnlocked) ? Convert.ToBoolean(userData[USER_FIELD_PuzzleUnlocked]) : false,
                 };
 
                 userList.Add(user);
@@ -208,10 +233,8 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
      * USER SAVED
      */
 
-    private async Task<bool> GetUserSaved()
+    private async Task GetUserSaved()
     {
-        bool hasUserSaved = false;
-
         await _applicationCollectionReference.Document(APPLICATION_DOCUMENT_UserSaved).GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsCompleted)
@@ -224,23 +247,18 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
                     {
                         Name = userData.ContainsKey(USER_FIELD_Name) ? userData[USER_FIELD_Name].ToString() : string.Empty,
                         CurrentLevelIndex = userData.ContainsKey(USER_FIELD_CurrentLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentLevelIndex]) : 0,
+                        PuzzleUnlocked = userData.ContainsKey(USER_FIELD_PuzzleUnlocked) ? Convert.ToBoolean(userData[USER_FIELD_PuzzleUnlocked]) : false,
                     };
 
                     if (string.IsNullOrEmpty(CurrentUser.Name))
                     {
                         Debug.Log("Data null!");
                     }
-                    else
-                    {
-                        hasUserSaved = true;
-                    }
-
                 }
                 else
                 {
                     Debug.Log("Data not exists!");
                 }
-
             }
             else
             {
@@ -248,17 +266,15 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
             }
 
         });
-
-        return hasUserSaved;
-
     }
     
     private void UpdateUserSaved()
     {
         _applicationCollectionReference.Document(APPLICATION_DOCUMENT_UserSaved).UpdateAsync(new Dictionary<string, object>
         {
-            {USER_FIELD_Name , CurrentUser.Name },
-            {USER_FIELD_CurrentLevelIndex , CurrentUser.CurrentLevelIndex },
+            { USER_FIELD_Name , CurrentUser.Name },
+            { USER_FIELD_CurrentLevelIndex , CurrentUser.CurrentLevelIndex },
+            { USER_FIELD_PuzzleUnlocked , CurrentUser.PuzzleUnlocked },
         });
     }
 
@@ -317,8 +333,8 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     {
         _applicationCollectionReference.Document(APPLICATION_DOCUMENT_Audio).UpdateAsync(new Dictionary<string, object>
         {
-            {AUDIO_FIELD_Music , CurrentAudio.Music },
-            {AUDIO_FIELD_Sound , CurrentAudio.Sound },
+            { AUDIO_FIELD_Music , CurrentAudio.Music },
+            { AUDIO_FIELD_Sound , CurrentAudio.Sound },
         });
     }
 
@@ -341,7 +357,7 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     {
         UpdateUserSaved();
 
-        TransitionManager.Instance.Load_MainMenuScene();
+        TransitionManager.Instance.LoadScene(Scene.MainMenu);
 
         Debug.Log("LoginUser");
 
@@ -362,7 +378,7 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     {
         UpdateUserSaved();
 
-        TransitionManager.Instance.Load_LoginScene();
+        TransitionManager.Instance.LoadScene(Scene.Login);
     }
 
     /*
@@ -375,7 +391,21 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
 
         UpdateAudio();
     }
+    
+    /*
+     * 
+     */
 
+    public void SetCurrentSelectedLevel(int currentSelectedLevel)
+    {
+        CurrentSelectedLevel = currentSelectedLevel;
+    }
+    
+    public int GetCurrentSelectedLevel()
+    {
+        return CurrentSelectedLevel;
+    }
+    
     #endregion
 
 }

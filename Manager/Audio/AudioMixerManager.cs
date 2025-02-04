@@ -24,14 +24,14 @@ public class AudioMixerManager : PersistentSingleton<AudioMixerManager>
         VolumeState musicVolumeState = (VolumeState)Enum.Parse(typeof(VolumeState), FirebaseManager.Instance.CurrentAudio.Music);
         VolumeState soundVolumeState = (VolumeState)Enum.Parse(typeof(VolumeState), FirebaseManager.Instance.CurrentAudio.Sound);
 
-        int musicIndex = this.GetCurentIndexOfCurrentVolumeState(musicVolumeState);
-        int soundIndex = this.GetCurentIndexOfCurrentVolumeState(soundVolumeState);
+        int musicIndex = GetCurentIndexOfCurrentVolumeState(musicVolumeState);
+        int soundIndex = GetCurentIndexOfCurrentVolumeState(soundVolumeState);
 
-        this._currentMusicVolumeState = musicVolumeState;
-        this._currentSoundVolumeState = soundVolumeState;
+        _currentMusicVolumeState = musicVolumeState;
+        _currentSoundVolumeState = soundVolumeState;
 
-        this.SetMusicVolume(VOLUME_STATES[musicIndex].Item2);
-        this.SetSoundVolume(VOLUME_STATES[soundIndex].Item2);
+        SetMusicVolume(VOLUME_STATES[musicIndex].Item2);
+        SetSoundVolume(VOLUME_STATES[soundIndex].Item2);
 
         MusicManager.Instance.PlayMusic();
     }
@@ -42,24 +42,24 @@ public class AudioMixerManager : PersistentSingleton<AudioMixerManager>
 
     public void NextMusicVolumeState()
     {
-        int nextIndex = this.GetNextIndexOfCurrentVolumeState(this._currentMusicVolumeState);
-        this._currentMusicVolumeState = VOLUME_STATES[nextIndex].Item1;
+        int nextIndex = GetNextIndexOfCurrentVolumeState(_currentMusicVolumeState);
+        _currentMusicVolumeState = VOLUME_STATES[nextIndex].Item1;
         float volumeValue = VOLUME_STATES[nextIndex].Item2;
 
-        this.SetMusicVolume(volumeValue);
+        SetMusicVolume(volumeValue);
 
-        FirebaseManager.Instance.ChangeAudioVolume(this._currentMusicVolumeState, this._currentSoundVolumeState);
+        FirebaseManager.Instance.ChangeAudioVolume(_currentMusicVolumeState, _currentSoundVolumeState);
     }
 
     public void NextSoundVolumeState()
     {
-        int nextIndex = this.GetNextIndexOfCurrentVolumeState(this._currentSoundVolumeState);
-        this._currentSoundVolumeState = VOLUME_STATES[nextIndex].Item1;
+        int nextIndex = GetNextIndexOfCurrentVolumeState(_currentSoundVolumeState);
+        _currentSoundVolumeState = VOLUME_STATES[nextIndex].Item1;
         float volumeValue = VOLUME_STATES[nextIndex].Item2;
 
-        this.SetSoundVolume(volumeValue);
+        SetSoundVolume(volumeValue);
 
-        FirebaseManager.Instance.ChangeAudioVolume(this._currentMusicVolumeState, this._currentSoundVolumeState);
+        FirebaseManager.Instance.ChangeAudioVolume(_currentMusicVolumeState, _currentSoundVolumeState);
     }
 
     /*
@@ -68,12 +68,12 @@ public class AudioMixerManager : PersistentSingleton<AudioMixerManager>
 
     private void SetMusicVolume(float volume)
     {
-        this._audioMixer.SetFloat(AUDIO_MIXER_PARAMETER_MusicVolume, Mathf.Log10(volume) * 20f);
+        _audioMixer.SetFloat(AUDIO_MIXER_PARAMETER_MusicVolume, Mathf.Log10(volume) * 20f);
     }
 
     private void SetSoundVolume(float volume)
     {
-        this._audioMixer.SetFloat(AUDIO_MIXER_PARAMETER_SoundVolume, Mathf.Log10(volume) * 20f);
+        _audioMixer.SetFloat(AUDIO_MIXER_PARAMETER_SoundVolume, Mathf.Log10(volume) * 20f);
     }
 
     private int GetNextIndexOfCurrentVolumeState(VolumeState volumeState)
@@ -96,12 +96,12 @@ public class AudioMixerManager : PersistentSingleton<AudioMixerManager>
 
     public string GetCurrentMusicVolumeStateString()
     {
-        return this._currentMusicVolumeState.ToString();
+        return _currentMusicVolumeState.ToString();
     }
 
     public string GetCurrentSoundVolumeStateString()
     {
-        return this._currentSoundVolumeState.ToString();
+        return _currentSoundVolumeState.ToString();
     }
 
 }

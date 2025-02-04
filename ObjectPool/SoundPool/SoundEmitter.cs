@@ -57,7 +57,7 @@ namespace HIEU_NL.ObjectPool.Audio
             }
 
             _audioSource.Stop();
-            SoundPool.Instance.ReturnToPool(this);
+            SoundManager.Instance.ReturnToPool(this);
         }
 
         //
@@ -66,7 +66,7 @@ namespace HIEU_NL.ObjectPool.Audio
         {
             yield return new WaitWhile(() => _audioSource.isPlaying);
 
-            SoundPool.Instance.ReturnToPool(this);
+            SoundManager.Instance.ReturnToPool(this);
         }
 
         public void WithRandomPitch(float min = -0.05f, float max = 0.05f)

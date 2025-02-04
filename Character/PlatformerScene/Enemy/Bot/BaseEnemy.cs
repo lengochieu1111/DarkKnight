@@ -143,17 +143,17 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         {
             base.ResetValues();
             
-            targetTransform = GameMode.Instance.PlayerSection.Player.MyTransform;
+            targetTransform = GameMode_Platformer.Instance.PlayerSection.Player.MyTransform;
             
             //##
-            if (MapPlacementPoint.IsValid() && MapPlacementPoint.DestinationPointArray.IsValid()
-                && MapPlacementPoint.DestinationPointArray[0].IsValid() && MapPlacementPoint.DestinationPointArray[1].IsValid()
-                && MapPlacementPoint.DestinationPointArray[2].IsValid() && MapPlacementPoint.DestinationPointArray[3].IsValid())
+            if (mapPlacementPointPlatformer.IsValid() && mapPlacementPointPlatformer.DestinationPointArray.IsValid()
+                && mapPlacementPointPlatformer.DestinationPointArray[0].IsValid() && mapPlacementPointPlatformer.DestinationPointArray[1].IsValid()
+                && mapPlacementPointPlatformer.DestinationPointArray[2].IsValid() && mapPlacementPointPlatformer.DestinationPointArray[3].IsValid())
             {
-                PatrolPositionLeft = MapPlacementPoint.DestinationPointArray[0].transform.position;
-                PatrolPositionRight = MapPlacementPoint.DestinationPointArray[1].transform.position;
-                ChasePositionBelow = MapPlacementPoint.DestinationPointArray[2].transform.position;
-                ChasePositionAbove = MapPlacementPoint.DestinationPointArray[3].transform.position;
+                PatrolPositionLeft = mapPlacementPointPlatformer.DestinationPointArray[0].transform.position;
+                PatrolPositionRight = mapPlacementPointPlatformer.DestinationPointArray[1].transform.position;
+                ChasePositionBelow = mapPlacementPointPlatformer.DestinationPointArray[2].transform.position;
+                ChasePositionAbove = mapPlacementPointPlatformer.DestinationPointArray[3].transform.position;
             }
             else
             {

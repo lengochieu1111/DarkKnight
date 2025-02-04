@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.Map;
+using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using HIEU_NL.Platformer.SO.Entity;
 using NaughtyAttributes;
 using UnityEngine;
@@ -11,14 +12,14 @@ using UnityEngine.Serialization;
 
 namespace HIEU_NL.Platformer.Script.Entity
 {
-    public abstract class BaseEntity : PoolPrefab, IDamageable
+    public abstract class BaseEntity : Prefab_Platformer, IDamageable
     {
         public event EventHandler<HitData> OnTakeDamage;
         public event EventHandler OnDead;
         
-        [field: SerializeField, BoxGroup("MAP HOUSE")] public EMapHouseType MapHouseType { get; private set; }
-        [field: SerializeField, BoxGroup("MAP HOUSE")] public EBotPlacementType BotPlacementType { get; private set; }
-        [field: SerializeField, BoxGroup("MAP HOUSE"), ReadOnly] public MapPlacementPoint MapPlacementPoint;
+        [field: SerializeField, BoxGroup("MAP HOUSE")] public EMapHouseType_Platformer MapHouseTypePlatformer { get; private set; }
+        [field: SerializeField, BoxGroup("MAP HOUSE")] public EBotPlacementType_Platformer BotPlacementTypePlatformer { get; private set; }
+        [FormerlySerializedAs("MapPlacementPoint")] [field: SerializeField, BoxGroup("MAP HOUSE"), ReadOnly] public MapPlacementPoint_Platformer mapPlacementPointPlatformer;
 
         //# SELF
         public Transform MyTransform => transform;
@@ -242,9 +243,9 @@ namespace HIEU_NL.Platformer.Script.Entity
 
         public float GetHealthPercentage() { return health * 1f / maxHealth; }
 
-        public void SetMapPlacementPoint(MapPlacementPoint mapPlacementPoint)
+        public void SetMapPlacementPoint(MapPlacementPoint_Platformer mapPlacementPointPlatformer)
         {
-            MapPlacementPoint = mapPlacementPoint;
+            this.mapPlacementPointPlatformer = mapPlacementPointPlatformer;
         }
 
         #endregion

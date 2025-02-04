@@ -8,7 +8,7 @@ using UnityEngine.Pool;
 
 namespace HIEU_NL.DesignPatterns.ObjectPool.Multiple
 {
-    public class MultipleObjectPool : Singleton<MultipleObjectPool> 
+    public abstract class MultipleObjectPool : Singleton<MultipleObjectPool> 
     {
         public readonly Dictionary<PoolPrefabType, IObjectPool<PoolPrefab>> _objectPoolAll = new();
         private readonly Dictionary<PoolPrefabType, List<PoolPrefab>>  _activePoolObjectAll = new();

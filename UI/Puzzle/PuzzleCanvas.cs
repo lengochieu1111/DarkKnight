@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using HIEU_NL.DesignPatterns.Singleton;
+using HIEU_NL.Puzzle.Script.Game;
 
 public class PuzzleCanvas : Singleton<PuzzleCanvas>
 {
@@ -13,27 +14,27 @@ public class PuzzleCanvas : Singleton<PuzzleCanvas>
     {
         base.Start();
 
-        GameManager_Puzzle.Instance.OnChangedState += GameManager_Puzzle_OnChangedState;
-        GameManager_Puzzle.Instance.OnPausegame += GameManager_OnPausegame;
+        GameMode_Puzzle.Instance.OnChangedState += GameManager_Puzzle_OnChangedState;
+        GameMode_Puzzle.Instance.OnPauseGame += GameManagerOnPauseGame;
     }
 
     protected override void SetupComponents()
     {
         base.SetupComponents();
 
-        if (this._puzzleUI == null)
+        if (_puzzleUI == null)
         {
-            this._puzzleUI = this.GetComponentInChildren<PuzzleUI>(true);
+            _puzzleUI = GetComponentInChildren<PuzzleUI>(true);
         }
 
-        if (this._pauseGameUI == null)
+        if (_pauseGameUI == null)
         {
-            this._pauseGameUI = this.GetComponentInChildren<PauseGameUI_PuzzleCanvas>(true);
+            _pauseGameUI = GetComponentInChildren<PauseGameUI_PuzzleCanvas>(true);
         }
         
-        if (this._transitionUI == null)
+        if (_transitionUI == null)
         {
-            this._transitionUI = this.GetComponentInChildren<TransitionUI>(true);
+            _transitionUI = GetComponentInChildren<TransitionUI>(true);
         }
 
     }
@@ -42,9 +43,9 @@ public class PuzzleCanvas : Singleton<PuzzleCanvas>
     {
         base.ResetComponents();
 
-        this.ShowPuzzleUI();
-        this.HidePauseGameUI();
-        this.HideTransitionUI();
+        ShowPuzzleUI();
+        HidePauseGameUI();
+        HideTransitionUI();
     }
 
     /*
@@ -53,25 +54,25 @@ public class PuzzleCanvas : Singleton<PuzzleCanvas>
 
     private void GameManager_Puzzle_OnChangedState(object sender, System.EventArgs e)
     {
-        if (GameManager_Puzzle.Instance.IsGameOver())
+        if (GameMode_Puzzle.Instance.IsGameOver())
         {
-            this.ShowTransitionUI();
+            ShowTransitionUI();
         }
         else
         {
-            this.HideTransitionUI();
+            HideTransitionUI();
         }
     }
 
-    private void GameManager_OnPausegame(object sender, System.EventArgs e)
+    private void GameManagerOnPauseGame(object sender, System.EventArgs e)
     {
-        if (GameManager_Puzzle.Instance.IsGamePaused())
+        if (GameMode_Puzzle.Instance.IsGamePaused())
         {
-            this.ShowPauseGameUI();
+            ShowPauseGameUI();
         }
         else
         {
-            this.HidePauseGameUI();
+            HidePauseGameUI();
         }
     }
 
@@ -81,31 +82,31 @@ public class PuzzleCanvas : Singleton<PuzzleCanvas>
 
     public void ShowPuzzleUI()
     {
-        this._puzzleUI.Show();
+        _puzzleUI.Show();
     }
 
     public void HidePuzzleUI()
     {
-        this._puzzleUI.Hide();
+        _puzzleUI.Hide();
     }
     
     public void ShowPauseGameUI()
     {
-        this._pauseGameUI.Show();
+        _pauseGameUI.Show();
     }
 
     public void HidePauseGameUI()
     {
-        this._pauseGameUI.Hide();
+        _pauseGameUI.Hide();
     }
     
     public void ShowTransitionUI()
     {
-        this._transitionUI.Show();
+        _transitionUI.Show();
     }
 
     public void HideTransitionUI()
     {
-        this._transitionUI.Hide();
+        _transitionUI.Hide();
     }
 }

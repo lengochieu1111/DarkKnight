@@ -1,6 +1,7 @@
 using HIEU_NL.Manager;
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.ObjectPool.Audio;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -12,16 +13,16 @@ public class GameTextButton : RyoMonoBehaviour, IPointerEnterHandler, IPointerEx
     {
         base.Start();
 
-        this.HideButtonPointer();
+        HideButtonPointer();
     }
 
     protected override void SetupComponents()
     {
         base.SetupComponents();
 
-        if (this._buttonPointer == null)
+        if (_buttonPointer == null)
         {
-            this._buttonPointer = this.transform.Find("ButtonPointer");
+            _buttonPointer = transform.Find("ButtonPointer");
         }
     }
 
@@ -29,7 +30,7 @@ public class GameTextButton : RyoMonoBehaviour, IPointerEnterHandler, IPointerEx
     {
         base.ResetComponents();
 
-        this._buttonPointer.gameObject.SetActive(false);
+        _buttonPointer.gameObject.SetActive(false);
     }
 
     /*
@@ -38,20 +39,20 @@ public class GameTextButton : RyoMonoBehaviour, IPointerEnterHandler, IPointerEx
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        this.ShowButtonPointer();
+        ShowButtonPointer();
 
-        SoundManager.Instance.PlaySound(HIEU_NL.ObjectPool.Audio.SoundType.Hover);
+        ((SoundManager)SoundManager.Instance).PlaySound(SoundType.Hover);
+
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        this.HideButtonPointer();
+        HideButtonPointer();
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        SoundManager.Instance.PlaySound(HIEU_NL.ObjectPool.Audio.SoundType.Click);
-
+        ((SoundManager)SoundManager.Instance).PlaySound(SoundType.Click);
     }
 
     /*
@@ -60,12 +61,12 @@ public class GameTextButton : RyoMonoBehaviour, IPointerEnterHandler, IPointerEx
 
     private void ShowButtonPointer()
     {
-        this._buttonPointer.gameObject.SetActive(true);
+        _buttonPointer.gameObject.SetActive(true);
     }
     
     private void HideButtonPointer()
     {
-        this._buttonPointer.gameObject.SetActive(false);
+        _buttonPointer.gameObject.SetActive(false);
     }
 
 

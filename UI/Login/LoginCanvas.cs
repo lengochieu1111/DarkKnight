@@ -7,13 +7,8 @@ using UnityEngine.SceneManagement;
 public class LoginCanvas : Singleton<LoginCanvas>
 {
     [SerializeField] private LoginUI _loginUI;
-    [SerializeField] private NewProfileUI _newProfileUI;
-    [SerializeField] private SelectProfileUI _selectProfileUI;
-
-    protected override void Start()
-    {
-        // TransitionManager.Instance.LoadingSceneFinish += TransitionManager_LoadingSceneFinish;
-    }
+    [SerializeField] private NewProfileUI_LoginCanvas _newProfileUI;
+    [SerializeField] private SelectProfileUI_LoginCanvas _selectProfileUI;
 
     #region SETUP COMPONET/VALUES
 
@@ -28,12 +23,12 @@ public class LoginCanvas : Singleton<LoginCanvas>
         
         if (_newProfileUI == null)
         {
-            _newProfileUI = GetComponentInChildren<NewProfileUI>(true);
+            _newProfileUI = GetComponentInChildren<NewProfileUI_LoginCanvas>(true);
         }
         
         if (_selectProfileUI == null)
         {
-            _selectProfileUI = GetComponentInChildren<SelectProfileUI>(true);
+            _selectProfileUI = GetComponentInChildren<SelectProfileUI_LoginCanvas>(true);
         }
 
     }
@@ -46,30 +41,6 @@ public class LoginCanvas : Singleton<LoginCanvas>
         HideNewProfileUI();
         HideSelectProfileUI();
 
-    }
-
-    #endregion
-
-    #region EVENT ACTION
-
-    private void TransitionManager_LoadingSceneFinish(object sender, System.EventArgs e)
-    {
-        LoginUserSaved();
-    }
-
-    #endregion
-
-    #region OTHERS
-
-    private void LoginUserSaved()
-    {
-        if (SceneManager.GetActiveScene().buildIndex == (int)Scene.Login)
-        {
-            if (!string.IsNullOrEmpty(FirebaseManager.Instance.CurrentUser.Name))
-            {
-                TransitionManager.Instance.Load_MainMenuScene();
-            }
-        }
     }
 
     #endregion
