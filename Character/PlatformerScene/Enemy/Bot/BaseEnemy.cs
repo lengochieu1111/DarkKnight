@@ -1,3 +1,4 @@
+using System;
 using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,6 +17,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
     [RequireComponent(typeof(CapsuleCollider2D), typeof(BoxCollider2D))]
     public abstract class BaseEnemy : BaseEntity, IAttackable
     {
+        public static event EventHandler OnAnyDeadEnemy;
+
         //# STATS
         public EnemyStats Stats => stats ? stats as EnemyStats : null;
         
@@ -143,7 +146,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         {
             base.ResetValues();
             
-            targetTransform = GameMode_Platformer.Instance.PlayerSection.Player.MyTransform;
+            targetTransform = GameMode_Platformer.Instance.Player.MyTransform;
             
             //##
             if (mapPlacementPointPlatformer.IsValid() && mapPlacementPointPlatformer.DestinationPointArray.IsValid()
@@ -482,6 +485,25 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             Vector3 boxSize = new Vector2(Stats.AttackDataArray[attackIndex].AttackRadiusWidth, Stats.AttackDataArray[attackIndex].AttackRangeHeight);
             Gizmos.DrawWireCube(boxCenter, boxSize);
         }
+        
+        #region IDAMAGEABLE
+
+        public override bool ITakeDamage(HitData hitData)
+        {
+            bool result = base.ITakeDamage(hitData);
+
+            if (!result) return false;
+
+            //## Dead Event
+            if (isDead)
+            {
+                OnAnyDeadEnemy?.Invoke(this, EventArgs.Empty);
+            }
+
+            return true;
+        }
+
+        #endregion
 
         
     }

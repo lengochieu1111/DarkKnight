@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using HIEU_NL.DesignPatterns.Singleton;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -172,4 +172,4 @@ namespace HIEU_NL.DesignPatterns.ObjectPool.Multiple
         #endregion
 
     }
-}
+}*/

@@ -6,8 +6,6 @@ using UnityEngine.UI;
 
 namespace HIEU_NL.ObjectPool.Profile
 {
-    using DesignPatterns.ObjectPool.Multiple;
-
     public class ProfileSingleUI_LoginCanvas : RyoMonoBehaviour
     {
         [SerializeField] private Button _selectButton;

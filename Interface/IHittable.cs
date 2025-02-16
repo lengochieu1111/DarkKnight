@@ -15,7 +15,7 @@ namespace HIEU_NL.Platformer.Script.Interface
         public int Damage { get; private set; }
         public bool IsCausedByPlayer { get; private set; }
 
-        public HitData(Entity.BaseEntity damageCauser = default, Vector3 attackDirection = default, int damage = 10,
+        public HitData(BaseEntity damageCauser = default, Vector3 attackDirection = default, int damage = 10,
             bool isCausedByPlayer = true)
         {
             DamageCauser = damageCauser;

@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
-using HIEU_NL.Puzzle.Script.Game;
+using HIEU_NL.Platformer.Script.Game;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PauseGameUI_PuzzleCanvas : RyoMonoBehaviour
+public class PauseGameUI_PlatformerCanvas : RyoMonoBehaviour
 {
     [SerializeField] private Button _restartButton;
     [SerializeField] private Button _musicButton;
@@ -101,7 +101,7 @@ public class PauseGameUI_PuzzleCanvas : RyoMonoBehaviour
 
     private void Restart()
     {
-        TransitionManager.Instance.LoadScene(Scene.Puzzle, true);
+        TransitionManager.Instance.LoadScene(Scene.Platformer, true);
     }
     
     private void Music()
@@ -125,9 +125,9 @@ public class PauseGameUI_PuzzleCanvas : RyoMonoBehaviour
 
     private void Exit()
     {
-        if (GameMode_Puzzle.Instance.IsGamePaused())
+        if (GameMode_Platformer.Instance.IsGamePaused)
         {
-            GameMode_Puzzle.Instance.TogglePauseGame();
+            GameMode_Platformer.Instance.TogglePauseGame();
         }
 
         Hide();

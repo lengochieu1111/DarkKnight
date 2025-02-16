@@ -164,16 +164,16 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
 
     }
 
-    /*    public void UpdateUser()
+    public void UpdateUser(User user)
     {
-        _userCollectionReference.Document(_user.Name).UpdateAsync(new Dictionary<string, object>
+        _userCollectionReference.Document(user.Name).UpdateAsync(new Dictionary<string, object>
         {
-            { USER_FIELD_Name, _user.Name },
-            { USER_FIELD_CurrentLevelIndex, _user.CurrentLevelIndex },
-            { USER_FIELD_PuzzleUnlocked , CurrentUser.PuzzleUnlocked },
+            { USER_FIELD_Name, user.Name },
+            { USER_FIELD_CurrentLevelIndex, user.CurrentLevelIndex },
+            { USER_FIELD_PuzzleUnlocked , user.PuzzleUnlocked },
 
         });
-    }*/
+    }
     
     public async Task<bool> DeleteUser(User user)
     {
@@ -391,6 +391,24 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
 
         UpdateAudio();
     }
+
+    public void ChangeUserSaved(string name = STRING_EMPTY, int currentLevelIndex = -1, bool puzzleUnlocked = false)
+    {
+        CurrentUser = new User
+        {
+            Name = name.Equals(STRING_EMPTY) ? CurrentUser.Name : name,
+            CurrentLevelIndex = currentLevelIndex.Equals(-1) ? CurrentUser.CurrentLevelIndex : currentLevelIndex,
+            PuzzleUnlocked = puzzleUnlocked
+        };
+        
+        UpdateUserSaved();
+        UpdateUser(CurrentUser);
+    }
+    
+    public void UpgradeLevel(int nextLevelIndex)
+    {
+        ChangeUserSaved(currentLevelIndex: nextLevelIndex, puzzleUnlocked:false);
+    }
     
     /*
      * 
@@ -401,11 +419,7 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
         CurrentSelectedLevel = currentSelectedLevel;
     }
     
-    public int GetCurrentSelectedLevel()
-    {
-        return CurrentSelectedLevel;
-    }
-    
     #endregion
 
 }
+

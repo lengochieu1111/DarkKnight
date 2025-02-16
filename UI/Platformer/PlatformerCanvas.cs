@@ -1,34 +1,32 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using HIEU_NL.DesignPatterns.Singleton;
-using HIEU_NL.Puzzle.Script.Game;
+using HIEU_NL.Platformer.Script.Game;
+using UnityEngine;
 
-public class PuzzleCanvas : Singleton<PuzzleCanvas>
+public class PlatformerCanvas : Singleton<PlatformerCanvas>
 {
-    [SerializeField] private PuzzleUI _puzzleUI;
-    [SerializeField] private PauseGameUI_PuzzleCanvas _pauseGameUI;
+    [SerializeField] private PlatformerUI _platformerUI;
+    [SerializeField] private PauseGameUI_PlatformerCanvas _pauseGameUI;
 
     protected override void Start()
     {
         base.Start();
 
-        GameMode_Puzzle.Instance.OnChangedState += GameManager_OnChangedState;
-        GameMode_Puzzle.Instance.OnPauseGame += GameManager_OnPauseGame;
+        GameMode_Platformer.Instance.OnChangedState += GameManager_OnChangedState;
+        GameMode_Platformer.Instance.OnPauseGame += GameManager_OnPauseGame;
     }
 
     protected override void SetupComponents()
     {
         base.SetupComponents();
 
-        if (_puzzleUI == null)
+        if (_platformerUI == null)
         {
-            _puzzleUI = GetComponentInChildren<PuzzleUI>(true);
+            _platformerUI = GetComponentInChildren<PlatformerUI>(true);
         }
 
         if (_pauseGameUI == null)
         {
-            _pauseGameUI = GetComponentInChildren<PauseGameUI_PuzzleCanvas>(true);
+            _pauseGameUI = GetComponentInChildren<PauseGameUI_PlatformerCanvas>(true);
         }
         
     }
@@ -42,27 +40,28 @@ public class PuzzleCanvas : Singleton<PuzzleCanvas>
     }
 
     /*
-     * 
+     *
      */
 
     private void GameManager_OnChangedState(object sender, System.EventArgs e)
     {
-        if (!GameMode_Puzzle.Instance.IsGameOver()) return;
+        if (!GameMode_Platformer.Instance.IsGameOver()) return;
 
-        if (GameMode_Puzzle.Instance.IsGameWon())
+        if (GameMode_Platformer.Instance.IsGameWon)
         {
-            TransitionManager.Instance.LoadScene(Scene.Platformer);
+            TransitionManager.Instance.LoadScene(Scene.MainMenu);
+            // Choice : next level - main menu
         }
         else
         {
-            TransitionManager.Instance.LoadScene(Scene.Puzzle, true);
+            TransitionManager.Instance.LoadScene(Scene.Platformer, true);
         }
         
     }
 
     private void GameManager_OnPauseGame(object sender, System.EventArgs e)
     {
-        if (GameMode_Puzzle.Instance.IsGamePaused())
+        if (GameMode_Platformer.Instance.IsGamePaused)
         {
             ShowPauseGameUI();
         }
@@ -73,17 +72,17 @@ public class PuzzleCanvas : Singleton<PuzzleCanvas>
     }
 
     /*
-     * 
+     *
      */
 
     public void ShowPuzzleUI()
     {
-        _puzzleUI.Show();
+        _platformerUI.Show();
     }
 
     public void HidePuzzleUI()
     {
-        _puzzleUI.Hide();
+        _platformerUI.Hide();
     }
     
     public void ShowPauseGameUI()
@@ -95,5 +94,4 @@ public class PuzzleCanvas : Singleton<PuzzleCanvas>
     {
         _pauseGameUI.Hide();
     }
-    
 }

@@ -39,6 +39,7 @@ namespace HIEU_NL.Puzzle.Script.Game
         [SerializeField] private int _gameActionCounter = 20;
 
         [ShowNonSerializedField] private bool _isGamePaused;
+        [ShowNonSerializedField] private bool _isGameWon;
 
         [Header("Level")]
         [ShowNonSerializedField] private int _currentLevelIndex;
@@ -49,6 +50,8 @@ namespace HIEU_NL.Puzzle.Script.Game
             
             //##
             _currentLevelIndex = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex;
+            _isGameWon = false;
+            _isGamePaused = false;
         }
 
         protected override void Start()
@@ -63,6 +66,7 @@ namespace HIEU_NL.Puzzle.Script.Game
             Player_Puzzle.OnPlayerActed += Player_Puzzle_OnPlayerActed;
             Player_Puzzle.OnPlayerPause += Player_Puzzle_OnPlayerPause;
             Player_Puzzle.OnPlayerLoses += Player_Puzzle_OnPlayerLoses;
+            Player_Puzzle.OnPlayerWins += Player_Puzzle_OnPlayerWins;
         }
 
         private void Update()
@@ -83,7 +87,7 @@ namespace HIEU_NL.Puzzle.Script.Game
                 case State.GamePlaying:
                     _gamePlayTimer -= Time.deltaTime;
 
-                    if (_gamePlayTimer < 0f || _gameActionCounter < 0)
+                    if (_gamePlayTimer < 0f || _gameActionCounter < 0 || _isGameWon)
                     {
                         _state = State.GameOver;
 
@@ -113,6 +117,14 @@ namespace HIEU_NL.Puzzle.Script.Game
         private void Player_Puzzle_OnPlayerLoses(object sender, EventArgs e)
         {
             _gameActionCounter = -1;
+        }
+        
+        private void Player_Puzzle_OnPlayerWins(object sender, EventArgs e)
+        {
+            _isGameWon = true;
+            
+            FirebaseManager.Instance.ChangeUserSaved(puzzleUnlocked: true);
+
         }
         
         #endregion
@@ -231,6 +243,11 @@ namespace HIEU_NL.Puzzle.Script.Game
         public bool IsGameOver()
         {
             return _state is State.GameOver;
+        }
+        
+        public bool IsGameWon()
+        {
+            return _isGameWon;
         }
         
         #endregion

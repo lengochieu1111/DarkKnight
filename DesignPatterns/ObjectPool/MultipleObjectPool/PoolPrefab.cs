@@ -1,3 +1,4 @@
+/*
 using System;
 using UnityEngine;
 
@@ -20,3 +21,4 @@ namespace HIEU_NL.DesignPatterns.ObjectPool.Multiple
     }
 
 }
+*/

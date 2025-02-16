@@ -93,7 +93,14 @@ public class MainMenuUI : RyoMonoBehaviour
 
     private void StartGame()
     {
-        Debug.Log("StartGame");
+        if (FirebaseManager.Instance.CurrentUser.PuzzleUnlocked)
+        {
+            TransitionManager.Instance.LoadScene(Scene.Platformer);
+        }
+        else
+        {
+            TransitionManager.Instance.LoadScene(Scene.Puzzle);
+        }
     }
 
     private void SelectLevel()
@@ -122,7 +129,7 @@ public class MainMenuUI : RyoMonoBehaviour
 
     private void UpdateVisual_UserNameText()
     {
-        // _userNameText.text = FirebaseManager.Instance.CurrentUser.Name;
+        _userNameText.text = FirebaseManager.Instance.CurrentUser.Name;
     }
 
     #endregion

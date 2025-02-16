@@ -1,6 +1,6 @@
-using HIEU_NL.DesignPatterns.ObjectPool.Multiple;
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using UnityEngine;
 
 namespace HIEU_NL.Platformer.SO.Entity.Player
@@ -10,7 +10,7 @@ namespace HIEU_NL.Platformer.SO.Entity.Player
     public class PlayerAttackStats : ScriptableObject
     {
         [Header("Attack Type")]
-        [SerializeField] public List<PoolPrefabType> AttackList;
+        [SerializeField] public List<PrefabType_Platformer> AttackList;
 
     }
 

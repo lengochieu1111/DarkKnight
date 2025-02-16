@@ -1,13 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 using Architecture.MVC;
+using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using HIEU_NL.Utilities;
 using NaughtyAttributes;
 
 namespace HIEU_NL.Platformer.Script.Entity.Player
 {
-    using DesignPatterns.ObjectPool.Multiple;
     using static ParameterExtensions.Animation;
 
     public class Player_Platformer : MVC_Controller<PlayerModel, PlayerView>
@@ -284,14 +283,14 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             int yAxisRotateLeft = isBeginFlipLeft ? Y_AXIS_0 : Y_AXIS_180;
             int yAxisRotateRight = isBeginFlipLeft ? Y_AXIS_180 : Y_AXIS_0;
             
-            if (_horizontalVelocity > 0 && isFlippingLeft && Mathf.Approximately(MyTransform.eulerAngles.y, yAxisRotateLeft))
+            if (_horizontalVelocity > 0 && isFlippingLeft)
             {
-                MyTransform.rotation = Quaternion.Euler(0, yAxisRotateRight, 0);
+                MyTransform.localRotation = Quaternion.Euler(0, yAxisRotateRight, 0);
                 isFlippingLeft = false;
             }
-            else if (_horizontalVelocity < 0 && !isFlippingLeft && Mathf.Approximately(MyTransform.eulerAngles.y, yAxisRotateRight))
+            else if (_horizontalVelocity < 0 && !isFlippingLeft)
             {
-                MyTransform.rotation = Quaternion.Euler(0, yAxisRotateLeft, 0);
+                MyTransform.localRotation = Quaternion.Euler(0, yAxisRotateLeft, 0);
                 isFlippingLeft = true;
             }
         }
@@ -1148,7 +1147,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             }
             
             //## 
-            PoolPrefab slashPrefab = MultipleObjectPool.Instance.GetPoolObject(model.AttackStats.AttackList[_attackIndex], rotation: attackRotation, parent: _attackPointTransform);
+            Prefab_Platformer slashPrefab = ObjectPool_Platformer.Instance.GetPoolObject(model.AttackStats.AttackList[_attackIndex], rotation: attackRotation, parent: _attackPointTransform);
             slashPrefab?.Activate();
             
         }
@@ -1160,8 +1159,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         }
 
         #endregion
-
-        // ANIMATION
 
         #region ANIMATION
 

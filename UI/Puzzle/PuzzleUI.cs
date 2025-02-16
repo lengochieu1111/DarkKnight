@@ -15,19 +15,19 @@ public class PuzzleUI : RyoMonoBehaviour
     {
         base.SetupComponents();
 
-        if (this._actionText == null)
+        if (_actionText == null)
         {
-            this._actionText = this.transform.Find("ActionText")?.GetComponent<TextMeshProUGUI>();
+            _actionText = transform.Find("ActionText")?.GetComponent<TextMeshProUGUI>();
         }        
         
-        if (this._levelText == null)
+        if (_levelText == null)
         {
-            this._levelText = this.transform.Find("LevelText")?.GetComponent<TextMeshProUGUI>();
+            _levelText = transform.Find("LevelText")?.GetComponent<TextMeshProUGUI>();
         }       
         
-        if (this._timeText == null)
+        if (_timeText == null)
         {
-            this._timeText = this.transform.Find("TimeText")?.GetComponent<TextMeshProUGUI>();
+            _timeText = transform.Find("TimeText")?.GetComponent<TextMeshProUGUI>();
         }
 
     }
@@ -36,7 +36,7 @@ public class PuzzleUI : RyoMonoBehaviour
     {
         if (GameMode_Puzzle.Instance.IsGamePlaying())
         {
-            this.UpdateVisual();
+            UpdateVisual();
         }
     }
 
@@ -44,12 +44,12 @@ public class PuzzleUI : RyoMonoBehaviour
     {
         // action
         string newActionText = GameMode_Puzzle.Instance.GetGameActionCounter().ToString();
-        if (newActionText != this._actionText.text)
+        if (newActionText != _actionText.text)
         {
-            this._actionText.transform.DOScale(1.2f, 0.3f).SetEase(Ease.OutQuad).OnComplete(() =>
+            _actionText.transform.DOScale(1.2f, 0.3f).SetEase(Ease.OutQuad).OnComplete(() =>
             {
-                this._actionText.text = newActionText;
-                this._actionText.transform.DOScale(1f, 0.4f).SetEase(Ease.OutQuad);
+                _actionText.text = newActionText;
+                _actionText.transform.DOScale(1f, 0.4f).SetEase(Ease.OutQuad);
             });
         }
 
@@ -59,19 +59,19 @@ public class PuzzleUI : RyoMonoBehaviour
         int seconds = timeToInt % 60;
         string newTimeText = string.Format("{0:D2}:{1:D2}", minutes, seconds);
 
-        if (newTimeText != this._timeText.text)
+        if (newTimeText != _timeText.text)
         {
-            this._timeText.transform.DOScale(1.2f, 0.3f).SetEase(Ease.OutQuad).OnComplete(() =>
+            _timeText.transform.DOScale(1.2f, 0.3f).SetEase(Ease.OutQuad).OnComplete(() =>
             {
-                this._timeText.text = newTimeText;
-                this._timeText.transform.DOScale(1f, 0.4f).SetEase(Ease.OutQuad);
+                _timeText.text = newTimeText;
+                _timeText.transform.DOScale(1f, 0.4f).SetEase(Ease.OutQuad);
             });
         }
 
         // level
         int levelIndex = GameMode_Puzzle.Instance.GetLevelIndex() + 1;
-        string newlevelText = this.IntToRoman(levelIndex).ToString();
-        this._levelText.text = newlevelText;
+        string newlevelText = IntToRoman(levelIndex).ToString();
+        _levelText.text = newlevelText;
     }
 
     public string IntToRoman(int number)
@@ -95,14 +95,14 @@ public class PuzzleUI : RyoMonoBehaviour
 
     public void Show()
     {
-        this.UpdateVisual();
+        UpdateVisual();
 
-        this.gameObject.SetActive(true);
+        gameObject.SetActive(true);
     }
 
     public void Hide()
     {
-        this.gameObject.SetActive(false);
+        gameObject.SetActive(false);
     }
 
 }

@@ -26,13 +26,6 @@ public class MapSingleUI_MainMenuCanvas : RyoMonoBehaviour
 
     }
 
-    protected override void ResetValues()
-    {
-        base.ResetValues();
-
-        _isUnlocked = false;
-    }
-
     private void Select()
     {
         if (FirebaseManager.Instance.CurrentUser == null || !_isUnlocked) return;

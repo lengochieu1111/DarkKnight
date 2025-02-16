@@ -1,7 +1,4 @@
 using System;
-using HIEU_NL.DesignPatterns.ObjectPool.Multiple;
-using System.Collections;
-using System.Collections.Generic;
 using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.Map;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
@@ -222,7 +219,7 @@ namespace HIEU_NL.Platformer.Script.Entity
             health = Mathf.Max(0, health - hitData.Damage);
             isDead = health <= 0;
 
-            PoolPrefab bloodPool = MultipleObjectPool.Instance.GetPoolObject(PoolPrefabType.EFFECT_Blood_1_PLATFORMER, parent:centerOfBodyTransform);
+            Prefab_Platformer bloodPool = ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.EFFECT_Blood_1, parent:centerOfBodyTransform);
             bloodPool.Activate();
             
             //## Hit Event

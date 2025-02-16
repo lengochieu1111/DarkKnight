@@ -1,7 +1,5 @@
 using System;
 using HIEU_NL.DesignPatterns.Singleton;
-using NaughtyAttributes;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;

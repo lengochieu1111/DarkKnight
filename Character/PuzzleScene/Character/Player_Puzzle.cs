@@ -16,6 +16,7 @@ namespace HIEU_NL.Puzzle.Script.Entity.Player
         public static event EventHandler OnPlayerActed;
         public static event EventHandler OnPlayerPause;
         public static event EventHandler OnPlayerLoses;
+        public static event EventHandler OnPlayerWins;
 
         private PuzzlePLayerInputActions _inputActions;
 
@@ -121,7 +122,7 @@ namespace HIEU_NL.Puzzle.Script.Entity.Player
                     }
                     else if (entity is SpacePortal_Puzzle)
                     {
-                        Debug.Log("Interact Space Portal");
+                        OnPlayerWins?.Invoke(this, EventArgs.Empty);
 
                         return;
                     }

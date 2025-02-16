@@ -34,6 +34,10 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
         BOT_Slime,
         
         BOT_Mosquito,
+        Enemy_2,
+        Enemy_3,
+        
+        Player
         
     }
     

@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using HIEU_NL.DesignPatterns.Singleton;
 using UnityEngine.UI;
 using DG.Tweening;
 using UnityEngine.SceneManagement;
-using System;
+using static HIEU_NL.Utilities.ParameterExtensions.Window;
 
 public enum Scene
 {
@@ -19,12 +17,19 @@ public enum Scene
 
 public class TransitionManager : PersistentSingleton<TransitionManager>
 {
-    public event EventHandler LoadingSceneBegin;
-    public event EventHandler LoadingSceneFinish;
+    /*public event EventHandler LoadingSceneBegin;
+    public event EventHandler LoadingSceneFinish;*/
+    
+    public enum TransitionType
+    {
+        Fade,
+        Fast
+    }
 
     [SerializeField] private Scene _scene;
-    [SerializeField] private Image _transitionImage;
-
+    [SerializeField] private Image _fadeTransitionImage;
+    [SerializeField] private Transform _fastTransitionTransform;
+    [SerializeField] private float _sceneTransitionTime = 1f;
 
     protected override void Start()
     {
@@ -38,9 +43,9 @@ public class TransitionManager : PersistentSingleton<TransitionManager>
     {
         base.SetupComponents();
 
-        if (_transitionImage == null)
+        if (_fadeTransitionImage == null)
         {
-            _transitionImage = GetComponentInChildren<Image>(true);
+            _fadeTransitionImage = GetComponentInChildren<Image>(true);
         }
 
     }
@@ -49,7 +54,7 @@ public class TransitionManager : PersistentSingleton<TransitionManager>
     {
         base.ResetComponents();
 
-        HideTransitionImage();
+        HideFadeTransition();
 
     }
 
@@ -59,11 +64,11 @@ public class TransitionManager : PersistentSingleton<TransitionManager>
 
     private void SceneManager_sceneLoaded(UnityEngine.SceneManagement.Scene arg0, LoadSceneMode arg1)
     {
-        _transitionImage.DOFade(0, 1f).OnComplete(() =>
+        _fadeTransitionImage.DOFade(0, _sceneTransitionTime).OnComplete(() =>
         {
-            HideTransitionImage();
+            HideFadeTransition();
 
-            LoadingSceneFinish?.Invoke(this, EventArgs.Empty);
+            // LoadingSceneFinish?.Invoke(this, EventArgs.Empty);
 
         });
     }
@@ -72,24 +77,47 @@ public class TransitionManager : PersistentSingleton<TransitionManager>
      * 
      */
 
-    public void LoadScene(Scene scene)
+    public void LoadScene(Scene scene, bool useLoadCallback = false, TransitionType transitionType = TransitionType.Fade)
     {
         _scene = scene;
 
-        ShowTransitionImage();
-        
-        _transitionImage.DOFade(1, 1f).OnComplete(() =>
+        if (transitionType is TransitionType.Fade)
         {
-            LoadingSceneBegin?.Invoke(this, EventArgs.Empty);
+            ShowFadeTransition();
+        
+            _fadeTransitionImage.DOFade(1, _sceneTransitionTime).OnComplete(() =>
+            {
+                // LoadingSceneBegin?.Invoke(this, EventArgs.Empty);
 
-            // SceneManager.LoadScene((int)Scene.Preparation);
+                Load();
 
-            SceneManager.LoadScene((int)_scene);
+            });
+        }
+        else
+        {
+            ShowFastTransition();
+            
+            _fastTransitionTransform.DOMoveY(WINDOW_HEIGHT / 2, 0.5f).SetEase(Ease.InQuad).OnComplete(() =>
+            {
+                Load();
+            });
+            
+        }
 
-        });
+        void Load()
+        {
+            if (useLoadCallback)
+            {
+                SceneManager.LoadScene((int)Scene.Preparation);
+            }
+            else
+            {
+                SceneManager.LoadScene((int)_scene);
+            }
+        }
 
     }
-
+    
     public void LoadCallback()
     {
         SceneManager.LoadScene((int)_scene);
@@ -99,16 +127,31 @@ public class TransitionManager : PersistentSingleton<TransitionManager>
      * 
      */
 
-    private void ShowTransitionImage()
+    private void ShowFadeTransition()
     {
-        _transitionImage.gameObject.SetActive(true);
+        _fadeTransitionImage.gameObject.SetActive(true);
     }
     
-    private void HideTransitionImage()
+    private void HideFadeTransition()
     {
-        _transitionImage.DOFade(0, 0);
+        _fadeTransitionImage.DOFade(0, 0);
+        _fadeTransitionImage.gameObject.SetActive(false);
+    }
 
-        _transitionImage.gameObject.SetActive(false);
+    /*
+     *
+     */
+
+    public void ShowFastTransition()
+    {
+        _fastTransitionTransform.DOMoveY(-WINDOW_HEIGHT, 0);
+        _fastTransitionTransform.gameObject.SetActive(true);
+    }
+
+    public void HideFastTransition()
+    {
+        _fastTransitionTransform.DOMoveY(-WINDOW_HEIGHT, 0);
+        _fastTransitionTransform.gameObject.SetActive(false);
     }
 
 }
