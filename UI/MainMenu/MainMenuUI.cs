@@ -110,7 +110,7 @@ public class MainMenuUI : RyoMonoBehaviour
 
     private void Shop()
     {
-        Debug.Log("Shop");
+        MainMenuCanvas.Instance.ShowShopUI();
     }
 
     private void Options()
@@ -129,7 +129,7 @@ public class MainMenuUI : RyoMonoBehaviour
 
     private void UpdateVisual_UserNameText()
     {
-        _userNameText.text = FirebaseManager.Instance.CurrentUser.Name;
+        // _userNameText.text = FirebaseManager.Instance.CurrentUser.Name;
     }
 
     #endregion

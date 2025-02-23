@@ -13,7 +13,7 @@ public class SelectProfileUI_LoginCanvas : RyoMonoBehaviour
 
     [SerializeField] private Button _exitButton;
 
-    private List<ProfileSingleUI_LoginCanvas> _profileList = new List<ProfileSingleUI_LoginCanvas>();
+    private List<ProfileSingleUI_LoginCanvas> _profileList = new();
 
     protected override void Awake()
     {
@@ -23,36 +23,6 @@ public class SelectProfileUI_LoginCanvas : RyoMonoBehaviour
         {
             Exit();
         });
-
-    }
-
-    protected override void OnEnable()
-    {
-        base.OnEnable();
-
-        UpdateVisual();
-    }
-
-    protected override void OnDisable()
-    {
-        base.OnDisable();
-
-        ClearVisual();
-    }
-
-    protected override void SetupComponents()
-    {
-        base.SetupComponents();
-
-        if (_scrollView == null)
-        {
-            _scrollView = GetComponentInChildren<ScrollRect>();
-        }
-        
-        if (_exitButton == null)
-        {
-            _exitButton = transform.Find("ExitButton")?.GetComponent<Button>();
-        }
 
     }
 
@@ -86,9 +56,11 @@ public class SelectProfileUI_LoginCanvas : RyoMonoBehaviour
     
     private void ClearVisual()
     {
+        if (_profileList.IsNullOrEmpty()) return;
+        
         foreach (ProfileSingleUI_LoginCanvas userProfile in _profileList)
         {
-            Destroy(gameObject);
+            Destroy(userProfile.gameObject);
         }
 
         _profileList.Clear();
@@ -105,11 +77,15 @@ public class SelectProfileUI_LoginCanvas : RyoMonoBehaviour
 
     public void Show()
     {
+        UpdateVisual();
+
         gameObject.SetActive(true);
     }
 
     public void Hide()
     {
+        ClearVisual();
+
         gameObject.SetActive(false);
     }
 

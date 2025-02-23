@@ -123,7 +123,7 @@ namespace HIEU_NL.Puzzle.Script.Game
         {
             _isGameWon = true;
             
-            FirebaseManager.Instance.ChangeUserSaved(puzzleUnlocked: true);
+            FirebaseManager.Instance.UnlockPuzzleUserSaved();
 
         }
         

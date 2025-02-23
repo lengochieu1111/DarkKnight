@@ -13,6 +13,9 @@ using Firebase;
 using HIEU_NL.DesignPatterns.Singleton;
 using System.Threading.Tasks;
 using System;
+using JetBrains.Annotations;
+using NUnit.Framework;
+using Unity.VisualScripting;
 
 [FirestoreData]
 public class User
@@ -20,14 +23,29 @@ public class User
     [FirestoreProperty] public string Name { get; set; }
     [FirestoreProperty] public int CurrentLevelIndex { get; set; }
     [FirestoreProperty] public bool PuzzleUnlocked { get; set; }
+    [FirestoreProperty] public Bag Bag { get; set; }
 
     public User(string name = STRING_EMPTY, int currentLevelIndex = 0, bool puzzleUnlocked = false)
     {
         Name = name;
         CurrentLevelIndex = currentLevelIndex;
         PuzzleUnlocked = puzzleUnlocked;
+        Bag = new Bag();
     }
 
+}
+
+[FirestoreData]
+public class Bag
+{
+    [FirestoreProperty] public List<int> Weapon { get; set; }
+    [FirestoreProperty] public List<int> Character { get; set; }
+
+    public Bag()
+    {
+        Weapon = new List<int> { 0 };
+        Character = new List<int> { 0 };
+    }
 }
 
 [FirestoreData]
@@ -153,6 +171,7 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
                 { USER_FIELD_Name, CurrentUser.Name },
                 { USER_FIELD_CurrentLevelIndex, CurrentUser.CurrentLevelIndex },
                 { USER_FIELD_PuzzleUnlocked, CurrentUser.PuzzleUnlocked },
+                { USER_FIELD_Bag, CurrentUser.Bag }
 
             });
 
@@ -171,7 +190,7 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
             { USER_FIELD_Name, user.Name },
             { USER_FIELD_CurrentLevelIndex, user.CurrentLevelIndex },
             { USER_FIELD_PuzzleUnlocked , user.PuzzleUnlocked },
-
+            { USER_FIELD_Bag, user.Bag }
         });
     }
     
@@ -210,11 +229,33 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
             {
                 Dictionary<string, object> userData = documentSnapshot.ToDictionary();
 
+                List<int> weaponList = new List<int>();
+                List<int> characterList = new List<int>();
+                
+                if (userData.ContainsKey(USER_FIELD_Bag))
+                {
+                    Dictionary<string, object> bagData = (Dictionary<string, object>)userData[USER_FIELD_Bag];
+                    if (bagData.ContainsKey(USER_FIELD_Bag_Weapon) && bagData[USER_FIELD_Bag_Weapon] is List<object> weaponObjectList)
+                    {
+                        weaponList = weaponObjectList.ConvertAll(weapon => Convert.ToInt32(weapon));
+                    }
+                    
+                    if (bagData.ContainsKey(USER_FIELD_Bag_Character) && bagData[USER_FIELD_Bag_Character] is List<object> characterObjectList)
+                    {
+                        characterList = characterObjectList.ConvertAll(character => Convert.ToInt32(character));
+                    }
+                }
+
                 User user = new User
                 {
                     Name = userData.ContainsKey(USER_FIELD_Name) ? userData[USER_FIELD_Name].ToString() : string.Empty,
                     CurrentLevelIndex = userData.ContainsKey(USER_FIELD_CurrentLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentLevelIndex]) : 0,
                     PuzzleUnlocked = userData.ContainsKey(USER_FIELD_PuzzleUnlocked) ? Convert.ToBoolean(userData[USER_FIELD_PuzzleUnlocked]) : false,
+                    Bag = new Bag()
+                    {
+                        Weapon = weaponList,
+                        Character = characterList,
+                    } 
                 };
 
                 userList.Add(user);
@@ -242,12 +283,34 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
                 if (task.Result.Exists)
                 {
                     Dictionary<string, object> userData = task.Result.ToDictionary();
+                    
+                    List<int> weaponList = new List<int>();
+                    List<int> characterList = new List<int>();
+                
+                    if (userData.ContainsKey(USER_FIELD_Bag))
+                    {
+                        Dictionary<string, object> bagData = (Dictionary<string, object>)userData[USER_FIELD_Bag];
+                        if (bagData.ContainsKey(USER_FIELD_Bag_Weapon) && bagData[USER_FIELD_Bag_Weapon] is List<object> weaponObjectList)
+                        {
+                            weaponList = weaponObjectList.ConvertAll(weapon => Convert.ToInt32(weapon));
+                        }
+                    
+                        if (bagData.ContainsKey(USER_FIELD_Bag_Character) && bagData[USER_FIELD_Bag_Character] is List<object> characterObjectList)
+                        {
+                            characterList = characterObjectList.ConvertAll(character => Convert.ToInt32(character));
+                        }
+                    }
 
                     CurrentUser = new User
                     {
                         Name = userData.ContainsKey(USER_FIELD_Name) ? userData[USER_FIELD_Name].ToString() : string.Empty,
                         CurrentLevelIndex = userData.ContainsKey(USER_FIELD_CurrentLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentLevelIndex]) : 0,
                         PuzzleUnlocked = userData.ContainsKey(USER_FIELD_PuzzleUnlocked) ? Convert.ToBoolean(userData[USER_FIELD_PuzzleUnlocked]) : false,
+                        Bag = new Bag()
+                        {
+                            Weapon = weaponList,
+                            Character = characterList,
+                        } 
                     };
 
                     if (string.IsNullOrEmpty(CurrentUser.Name))
@@ -275,6 +338,7 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
             { USER_FIELD_Name , CurrentUser.Name },
             { USER_FIELD_CurrentLevelIndex , CurrentUser.CurrentLevelIndex },
             { USER_FIELD_PuzzleUnlocked , CurrentUser.PuzzleUnlocked },
+            { USER_FIELD_Bag, CurrentUser.Bag }
         });
     }
 
@@ -391,23 +455,45 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
 
         UpdateAudio();
     }
+    
+    /*
+     * CHANGE USER SAVED
+     */
 
-    public void ChangeUserSaved(string name = STRING_EMPTY, int currentLevelIndex = -1, bool puzzleUnlocked = false)
+    private void ChangeUserSaved(string name = STRING_EMPTY, int currentLevelIndex = -1, bool puzzleUnlocked = false, Bag bag = null)
     {
         CurrentUser = new User
         {
             Name = name.Equals(STRING_EMPTY) ? CurrentUser.Name : name,
             CurrentLevelIndex = currentLevelIndex.Equals(-1) ? CurrentUser.CurrentLevelIndex : currentLevelIndex,
-            PuzzleUnlocked = puzzleUnlocked
+            PuzzleUnlocked = puzzleUnlocked,
+            Bag = bag ?? CurrentUser.Bag
         };
         
         UpdateUserSaved();
         UpdateUser(CurrentUser);
     }
+
+    public void UnlockPuzzleUserSaved()
+    {
+        ChangeUserSaved(puzzleUnlocked:true);
+    }
     
     public void UpgradeLevel(int nextLevelIndex)
     {
         ChangeUserSaved(currentLevelIndex: nextLevelIndex, puzzleUnlocked:false);
+    }
+    
+    public void BuyWeapon(int weaponIndex)
+    {
+        CurrentUser.Bag.Weapon.Add(weaponIndex);
+        ChangeUserSaved();
+    }
+    
+    public void BuyCharacter(int characterIndex)
+    {
+        CurrentUser.Bag.Character.Add(characterIndex);
+        ChangeUserSaved();
     }
     
     /*

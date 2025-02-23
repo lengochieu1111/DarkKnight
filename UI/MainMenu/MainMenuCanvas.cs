@@ -6,6 +6,7 @@ public class MainMenuCanvas : Singleton<MainMenuCanvas>
     [SerializeField] private MainMenuUI _mainMenuUI;
     [SerializeField] private OptionsUI_MainMenuCanvas _optionsUI;
     [SerializeField] private SelectMapUI_MainMenuCanvas _selectMapUI;
+    [SerializeField] private ShopUI_MainMenuCanvas _shopUI;
 
     #region SETUP COMPONENT/VALUES
 
@@ -33,6 +34,7 @@ public class MainMenuCanvas : Singleton<MainMenuCanvas>
         ShowMainMenuUI();
         HideOptionsUI();
         HideSelectMapUI();
+        HideShopUI();
     }
 
     #endregion
@@ -67,6 +69,16 @@ public class MainMenuCanvas : Singleton<MainMenuCanvas>
     public void HideSelectMapUI()
     {
         _selectMapUI.Hide();
+    }
+    
+    public void ShowShopUI()
+    {
+        _shopUI.Show();
+    }
+    
+    public void HideShopUI()
+    {
+        _shopUI.Hide();
     }
 
     #endregion

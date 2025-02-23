@@ -30,9 +30,11 @@ namespace HIEU_NL.Utilities
             public const string USER_FIELD_Name = "Name";
             public const string USER_FIELD_CurrentLevelIndex = "CurrentLevelIndex";
             public const string USER_FIELD_PuzzleUnlocked = "PuzzleUnlocked";
+            public const string USER_FIELD_Bag = "Bag";
+            public const string USER_FIELD_Bag_Weapon = "Weapon";
+            public const string USER_FIELD_Bag_Character = "Character";
 
             //##
-
             public const string COLLECTION_Application = "Application";
 
             //### user saved

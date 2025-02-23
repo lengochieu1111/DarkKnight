@@ -33,14 +33,13 @@ public class LoginCanvas : Singleton<LoginCanvas>
 
     }
 
-    protected override void ResetComponents()
+    protected override void OnEnable()
     {
-        base.ResetComponents();
-
+        base.OnEnable();
+        //##
         ShowLoginUI();
         HideNewProfileUI();
         HideSelectProfileUI();
-
     }
 
     #endregion

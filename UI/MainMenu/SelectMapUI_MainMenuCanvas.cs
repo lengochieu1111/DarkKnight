@@ -45,6 +45,8 @@ public class SelectMapUI_MainMenuCanvas : RyoMonoBehaviour
 
     private void ClearVisual()
     {
+        if (_mapSingleList.IsNullOrEmpty()) return;
+        
         foreach (MapSingleUI_MainMenuCanvas mapSingle in _mapSingleList)
         {
             Destroy(mapSingle.gameObject);

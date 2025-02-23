@@ -52,7 +52,7 @@ public class GameTextButton : RyoMonoBehaviour, IPointerEnterHandler, IPointerEx
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        ((SoundManager)SoundManager.Instance).PlaySound(SoundType.Click);
+        ((SoundManager)SoundManager.Instance)?.PlaySound(SoundType.Click);
     }
 
     /*
@@ -61,12 +61,12 @@ public class GameTextButton : RyoMonoBehaviour, IPointerEnterHandler, IPointerEx
 
     private void ShowButtonPointer()
     {
-        _buttonPointer.gameObject.SetActive(true);
+        _buttonPointer?.gameObject.SetActive(true);
     }
     
     private void HideButtonPointer()
     {
-        _buttonPointer.gameObject.SetActive(false);
+        _buttonPointer?.gameObject.SetActive(false);
     }
 
 
