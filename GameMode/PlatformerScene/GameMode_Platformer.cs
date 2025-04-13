@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using HIEU_NL.DesignPatterns.Singleton;
 using HIEU_NL.Platformer.Script.Entity;
 using HIEU_NL.Platformer.Script.Entity.Enemy;
@@ -8,6 +9,7 @@ using HIEU_NL.Platformer.Script.Entity.Player;
 using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.Map;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
+using HIEU_NL.SO.Character;
 using HIEU_NL.SO.Map;
 using HIEU_NL.Utilities;
 using NaughtyAttributes;
@@ -31,6 +33,7 @@ namespace HIEU_NL.Platformer.Script.Game
         
         [Header("Stats")]
         [SerializeField] private MapDataListSO _mapDataListSO;
+        [SerializeField] private CharacterDataListSO _characterDataListSO;
         [SerializeField] private PrefabAssetListSO_Platformer _prefabAssetListSO;
         [SerializeField] private CinemachineCamera _followPlayerCamera;
 
@@ -44,6 +47,7 @@ namespace HIEU_NL.Platformer.Script.Game
         
         [Header("Level")]
         [ShowNonSerializedField] private int _currentLevelIndex;
+        [ShowNonSerializedField] private int _currentCharacterIndex;
 
         private List<BaseEnemy> _enemyList = new();
 
@@ -60,9 +64,19 @@ namespace HIEU_NL.Platformer.Script.Game
             base.Start();
             
             //##
+            /*SpawnMap();
+            SpawnEntities();*/
+            
+            UT_Spawn().Forget();
+            
+        }
+
+        private async UniTask UT_Spawn()
+        {
+            await UniTask.WaitForSeconds(2f);
+            
             SpawnMap();
             SpawnEntities();
-            
         }
 
         private void Update()
@@ -91,11 +105,14 @@ namespace HIEU_NL.Platformer.Script.Game
             base.ResetValues();
             
             //##
-            _state = State.WaitingToStart;
-            IsGamePaused = false;
             IsGameWon = false;
+            IsGamePaused = false;
+            _state = State.WaitingToStart;
             
-            _currentLevelIndex = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex;
+            // _currentLevelIndex = FirebaseManager.Instance.CurrentUser.CurrentMaxLevelIndex;
+            // _currentCharacterIndex = FirebaseManager.Instance.CurrentUser.CurrentCharacterIndex;
+            _currentLevelIndex = 0;
+            _currentCharacterIndex = 0;
         }
 
         #endregion
@@ -111,18 +128,18 @@ namespace HIEU_NL.Platformer.Script.Game
                 IsGameWon = true;
                 _state = State.GameOver;
 
-                int currentSelectedLevel = FirebaseManager.Instance.CurrentSelectedLevel;
-                int CurrentLevel = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex;
+                int currentSelectedLevel = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex;
+                int CurrentLevel = FirebaseManager.Instance.CurrentUser.CurrentMaxLevelIndex;
 
                 if (currentSelectedLevel.Equals(CurrentLevel) && currentSelectedLevel < _mapDataListSO.MapAssetList.Count - 1)
                 {
                     FirebaseManager.Instance.UpgradeLevel(currentSelectedLevel + 1);
-                    FirebaseManager.Instance.SetCurrentSelectedLevel(currentSelectedLevel + 1);
+                    FirebaseManager.Instance.UseLevel(currentSelectedLevel + 1);
 
                 }
                 else if (!currentSelectedLevel.Equals(CurrentLevel))
                 {
-                    FirebaseManager.Instance.SetCurrentSelectedLevel(currentSelectedLevel + 1);
+                    FirebaseManager.Instance.UseLevel(currentSelectedLevel + 1);
                 }
 
                 OnChangedState?.Invoke(this, EventArgs.Empty);
@@ -137,14 +154,15 @@ namespace HIEU_NL.Platformer.Script.Game
         private void SpawnMap()
         {
             Map = Instantiate(_mapDataListSO.MapAssetList[_currentLevelIndex].MapPrefab_Platformer);
-            // _gamePlayTimer = _mapDataListSO.MapAssetList[_currentLevelIndex].MaxTime;
         }
         
         private void SpawnEntities()
         {
+            PrefabType_Platformer playerPrefabType =
+                _characterDataListSO.CharacterDataList[_currentCharacterIndex].PlayPrefab_Platformer.PrefabType;
             Prefab_Platformer playerPrefab = ObjectPool_Platformer.Instance.GetPoolObject(
-                PrefabType_Platformer.Player
-                , Map.StartingPlayerPointTransform.transform.position);
+                playerPrefabType
+                , Map.StartingPlayerPointTransform.position);
             playerPrefab.Activate();
             
             Player = playerPrefab as Player_Platformer;

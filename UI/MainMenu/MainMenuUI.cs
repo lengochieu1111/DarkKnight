@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Manager;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -95,11 +96,11 @@ public class MainMenuUI : RyoMonoBehaviour
     {
         if (FirebaseManager.Instance.CurrentUser.PuzzleUnlocked)
         {
-            TransitionManager.Instance.LoadScene(Scene.Platformer);
+            SceneTransitionManager.Instance.LoadScene(EScene.Platformer);
         }
         else
         {
-            TransitionManager.Instance.LoadScene(Scene.Puzzle);
+            SceneTransitionManager.Instance.LoadScene(EScene.Puzzle);
         }
     }
 
@@ -129,7 +130,7 @@ public class MainMenuUI : RyoMonoBehaviour
 
     private void UpdateVisual_UserNameText()
     {
-        // _userNameText.text = FirebaseManager.Instance.CurrentUser.Name;
+        _userNameText.text = FirebaseManager.Instance.CurrentUser.Name;
     }
 
     #endregion

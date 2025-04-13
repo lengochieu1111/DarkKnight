@@ -14,18 +14,69 @@ namespace HIEU_NL.Puzzle.Script.ObjectPool.Multiple
     {
         NONE,
 
-        Enemy,
+        //## Enemy
+        Enemy_1,
+        
+        //## Stone
         Stone,
+        
+        //## Space Portal
         SpacePortal,
+        
+        //## Key
         Key,
+        
+        //## Lock
         Lock_1,
+        
+        //## Trap
         Trap_1,
         
-        Player,
+        //## Player
+        Player_1,
         
         //## Effect
         EFFECT_Slash_1_Normal,
         EFFECT_Slash_2_Normal,
+        
+        //## Lock
+        Lock_2,
+        Lock_3,
+        Lock_4,
+
+        //## Trap
+        Trap_2,
+        Trap_3,
+        Trap_4,
+        
+        //## Player
+        Player_2,
+        
+        //## Effect
+        EFFECT_Slash_1_Blue,
+        EFFECT_Slash_2_Blue,
+        
+        EFFECT_Slash_1_Red,
+        EFFECT_Slash_2_Red,
+        
+        EFFECT_Slash_1_Purple,
+        EFFECT_Slash_2_Purple,
+        
+        //## Enemy
+        Enemy_2,
+        Enemy_3,
+        Enemy_4,
+        
+        //## Effect
+        EFFECT_BigImpact,
+        EFFECT_SmallImpact,
+        EFFECT_Blood,
+        EFFECT_DustTrail,
+        
+        EFFECT_LightPillar_Up,
+        EFFECT_LightPillar_Down,
+        
+        EFFECT_Lock_PickUp
 
     }
 

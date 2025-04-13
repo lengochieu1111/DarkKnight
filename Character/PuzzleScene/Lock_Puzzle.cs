@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using HIEU_NL.Puzzle.Script.Entity;
+using HIEU_NL.Manager;
+using HIEU_NL.ObjectPool.Audio;
 using HIEU_NL.Puzzle.Script.Entity.Player;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ namespace HIEU_NL.Puzzle.Script.Entity.Character
         {
             base.ResetValues();
 
-            this.canMoveInto = false;
+            canMoveInto = false;
         }
 
         #region Interaction
@@ -21,28 +22,59 @@ namespace HIEU_NL.Puzzle.Script.Entity.Character
         {
             base.SendInteract(receverEntity, senderDirection);
 
-            receverEntity.ReceiveInteract(this, senderDirection);
+            receverEntity.ReceiverInteract(this, senderDirection);
 
-            this.DestroySelf();
+            DestroySelf();
 
         }
 
-        public override void ReceiveInteract(BaseEntity_Puzzle senderEntity, Vector2 receverDirection)
+        public override void ReceiverInteract(BaseEntity_Puzzle senderEntity, Vector2 receverDirection)
         {
-            base.ReceiveInteract(senderEntity, receverDirection);
+            base.ReceiverInteract(senderEntity, receverDirection);
 
             if (senderEntity.TryGetComponent(out Player_Puzzle player))
             {
                 if (player.IsHavingKey())
                 {
-                    this.canMoveInto = true;
+                    canMoveInto = true;
 
-                    this.SendInteract(senderEntity, Vector2.zero);
+                    PlayDoorOpenSound();
+
+                    SendInteract(senderEntity, Vector2.zero);
+                }
+                else
+                {
+                    PlaySmallImpactEffect();
+                    PlayDoorKickSound();
                 }
             }
         }
 
         #endregion
+        
+        private void PlayDoorKickSound()
+        {
+            SoundType soundType;
+            switch (Random.Range(0, 3))
+            {
+                case 0:
+                    soundType = SoundType.Door_Kick_1;
+                    break;
+                case 1:
+                    soundType = SoundType.Door_Kick_2;
+                    break;
+                default:
+                    soundType = SoundType.Door_Kick_3;
+                    break;
+            }
+            ((SoundManager)SoundManager.Instance).PlaySound(soundType);
+        }
+        
+        private void PlayDoorOpenSound()
+        {
+            SoundType soundType = SoundType.Door_Open;
+            ((SoundManager)SoundManager.Instance).PlaySound(soundType);
+        }
 
     }
 

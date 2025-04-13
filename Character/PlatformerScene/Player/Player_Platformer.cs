@@ -1,7 +1,10 @@
 ﻿using System;
 using UnityEngine;
 using Architecture.MVC;
+using HIEU_NL.Platformer.Script.GameItem;
+using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
+using HIEU_NL.SO.Weapon;
 using HIEU_NL.Utilities;
 using NaughtyAttributes;
 
@@ -11,6 +14,14 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
     public class Player_Platformer : MVC_Controller<PlayerModel, PlayerView>
     {
+        #region CREATE EVENT
+
+        public static event EventHandler<float> OnHealthChange; // float : health percent
+        public static event EventHandler<float> OnEnergyChange; // float : energy percent
+
+        #endregion
+
+        
         private PlatformerPLayerInputActions _inputActions;
 
         [BoxGroup("Animator")]
@@ -95,11 +106,28 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         [SerializeField] private bool _isAttacking;
         [SerializeField] private Transform _attackPointTransform;
         [SerializeField] private int _attackIndex;
+        [SerializeField] private int _maxAttackIndex = 2;
+        [SerializeField] private int _weaponIndex;
+        [SerializeField] private WeaponAttackData _weaponAttackData;
 
         #endregion
 
+        #region EFFECT
+
         [BoxGroup("ParticleSystem")]
         [SerializeField, Required("Dust Particle")] private ParticleSystem _dustParticle;
+        
+        #endregion
+
+        
+        //# ENERGY
+        [SerializeField, BoxGroup("ENERGY")] protected int energy = 100;
+        [SerializeField, BoxGroup("ENERGY")] protected int maxEnergy = 100;
+        public int Energy => energy;
+        public int MaxEnergy => maxEnergy;
+        
+        //# PICK UP
+        [SerializeField, BoxGroup("PICK UP")] protected PlayerPickUp_Platformer playerPickUp;
 
 
         #region UNITY CORE
@@ -118,6 +146,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
             //##
             _inputActions.Enable();
+            
+            playerPickUp.OnPickUp += PlayerPickUp_OnPickUp;
         }
 
         protected override void OnDisable()
@@ -126,6 +156,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
             //##
             _inputActions.Disable();
+            playerPickUp.OnPickUp -= PlayerPickUp_OnPickUp;
+
         }
 
         protected virtual void Update()
@@ -195,6 +227,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
             ResetAttack();
 
+            _weaponIndex = FirebaseManager.Instance.CurrentUser.CurrentWeaponIndex;
             _verticalVelocity = Physics2D.gravity.y;
         }
 
@@ -217,6 +250,15 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
                 boxCollider = GetComponent<BoxCollider2D>();
             }
 
+        }
+
+        #endregion
+
+        #region EVENT ACTION
+
+        private void PlayerPickUp_OnPickUp(object sender, BaseGameItem_Platformer e)
+        {
+            HandlePickUp(e);
         }
 
         #endregion
@@ -1146,19 +1188,43 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
                 attackRotation = Quaternion.Euler(-180, attackRotation.eulerAngles.y, attackRotation.eulerAngles.z);
             }
             
-            //## 
-            Prefab_Platformer slashPrefab = ObjectPool_Platformer.Instance.GetPoolObject(model.AttackStats.AttackList[_attackIndex], rotation: attackRotation, parent: _attackPointTransform);
+            //##
+
+            _weaponAttackData = model.AttackStats.WeaponDataListSO.WeaponDataList[_weaponIndex]
+                .WeaponPrefab_Platformer;
+            PrefabType_Platformer slashPrefabType =
+                _attackIndex == 0 ? _weaponAttackData.AttackEffectOne : _weaponAttackData.AttackEffectTwo;
+            
+            Prefab_Platformer slashPrefab = ObjectPool_Platformer.Instance.GetPoolObject(slashPrefabType, rotation: attackRotation, parent: _attackPointTransform);
             slashPrefab?.Activate();
             
         }
 
         public void EndAttack()
         {
-            _attackIndex = (_attackIndex + 1) % model.AttackStats.AttackList.Count;
+            _attackIndex = (_attackIndex + 1) % _maxAttackIndex;
             _isAttacking = false;
         }
 
         #endregion
+
+        #region INTERFACE : DAMAGEABLE
+        
+        public override bool ITakeDamage(HitData hitData)
+        {
+            bool result = base.ITakeDamage(hitData);
+
+            if (!result) return false;
+
+            //## Health Change Event
+            OnHealthChange?.Invoke(this, GetHealthPercentage());
+
+            return true;
+            
+        }
+        
+        #endregion
+
 
         #region ANIMATION
 
@@ -1193,8 +1259,52 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         }
 
         #endregion
+        
+        
+        private void HandlePickUp(BaseGameItem_Platformer gameItem)
+        {
+            if (gameItem is Medicine_Platformer medicine)
+            {
+                HandlePickUpMedicine(medicine.MedicineType, medicine.CapacityType);
+            }
 
+            gameItem.PickUpSelf();
+        }
 
+        private void HandlePickUpMedicine(Medicine_Platformer.EMedicineType medicineType, Medicine_Platformer.ECapacityType capacityType)
+        {
+            int addValue = (int)capacityType;
+            switch (medicineType)
+            {
+                case Medicine_Platformer.EMedicineType.Health:
+                    health = Mathf.Clamp(health + addValue, 0, maxHealth);
+                    
+                    Prefab_Platformer pickUp_MedicineHealth_Effect =
+                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.EFFECT_PickUp_Medicine_Health_Effect,
+                            centerOfBodyTransform.position, Quaternion.identity, centerOfBodyTransform);
+                    pickUp_MedicineHealth_Effect.Activate();
+                    
+                    OnHealthChange?.Invoke(this, GetHealthPercentage());
+
+                    break;
+                
+                case Medicine_Platformer.EMedicineType.Energy:
+                    energy = Mathf.Clamp(energy + addValue, 0, maxEnergy);
+                    
+                    Prefab_Platformer pickUp_MedicineEnergy_Effect =
+                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.EFFECT_PickUp_Medicine_Energy_Effect,
+                            centerOfBodyTransform.position, Quaternion.identity, centerOfBodyTransform);
+                    pickUp_MedicineEnergy_Effect.Activate();
+                    
+                    OnEnergyChange?.Invoke(this, GetEnergyPercentage());
+
+                    break;
+            }
+        }
+        
+        public float GetEnergyPercentage() { return energy * 1f / maxEnergy; }
+
+        
     }
 
 }

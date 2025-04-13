@@ -99,7 +99,7 @@ namespace HIEU_NL.ObjectPool.Profile
             //##
             _rankingIndexText.text = rankingIndex.ToString();
             _nameText.text = user.Name;
-            _currentLevelIndexText.text = user.CurrentLevelIndex.ToString();
+            _currentLevelIndexText.text = user.CurrentMaxLevelIndex.ToString();
 
         }
 

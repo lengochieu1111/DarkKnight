@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Manager;
 using UnityEngine;
 
 public class IntroCanvas : RyoMonoBehaviour
@@ -13,11 +14,11 @@ public class IntroCanvas : RyoMonoBehaviour
     {
         if (FirebaseManager.Instance.CurrentUser != null)
         {
-            TransitionManager.Instance.LoadScene(Scene.MainMenu);
+            SceneTransitionManager.Instance.LoadScene(EScene.MainMenu);
         }
         else
         {
-            TransitionManager.Instance.LoadScene(Scene.Login);
+            SceneTransitionManager.Instance.LoadScene(EScene.Login);
         }
     }
 

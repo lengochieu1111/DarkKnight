@@ -8,8 +8,8 @@ namespace HIEU_NL.Puzzle.Script.Map
         Stone,
         SpacePortal,
         Key,
-        Lock_1,
-        Trap_1,
+        Lock,
+        Trap,
         
     }
 }

@@ -33,7 +33,6 @@ public class AudioMixerManager : PersistentSingleton<AudioMixerManager>
         SetMusicVolume(VOLUME_STATES[musicIndex].Item2);
         SetSoundVolume(VOLUME_STATES[soundIndex].Item2);
 
-        MusicManager.Instance.PlayMusic();
     }
 
     /*

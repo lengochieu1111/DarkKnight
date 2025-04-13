@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Manager;
 using UnityEngine;
 
 public class LoadingCanvas : RyoMonoBehaviour
@@ -12,7 +13,7 @@ public class LoadingCanvas : RyoMonoBehaviour
         {
             this._isFirstUpdate = true;
 
-            TransitionManager.Instance.LoadCallback();
+            // SceneTransitionManager.Instance.LoadCallback();
         }
     }
 

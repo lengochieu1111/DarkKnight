@@ -5,7 +5,6 @@ using HIEU_NL.Platformer.Script.Map;
 using HIEU_NL.Puzzle.Script.Map;
 using NaughtyAttributes;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace HIEU_NL.SO.Map
 {
@@ -16,14 +15,19 @@ namespace HIEU_NL.SO.Map
     public class MapData
     {
         //## PUZZLE
+        [Header("PUZZLE")]
         [BoxGroup("PUZZLE")] public Map_Puzzle MapPrefab_Puzzle;
         [BoxGroup("PUZZLE")] public int MaxTime;
         [BoxGroup("PUZZLE")] public int MaxAction;
         
         //## PLATFORMER
+        [Header("PLATFORMER")]
         [BoxGroup("PLATFORMER")] public Map_Platformer MapPrefab_Platformer;
-        
+        // [BoxGroup("PLATFORMER")] public int MaxHealthMedicienRate;
+        // [BoxGroup("PLATFORMER")] public int MaxEnergyMedicien;
+
         //## INFORMATION
+        [Header("INFORMATION")]
         [BoxGroup("INFORMATION"), ShowAssetPreview] public Sprite MapSprite;
         [BoxGroup("INFORMATION")] public int MapIndex;
         [BoxGroup("INFORMATION")] public string MapName;

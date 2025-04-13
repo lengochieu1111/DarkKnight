@@ -13,24 +13,29 @@ using Firebase;
 using HIEU_NL.DesignPatterns.Singleton;
 using System.Threading.Tasks;
 using System;
-using JetBrains.Annotations;
-using NUnit.Framework;
-using Unity.VisualScripting;
+using HIEU_NL.Manager;
 
 [FirestoreData]
 public class User
 {
     [FirestoreProperty] public string Name { get; set; }
-    [FirestoreProperty] public int CurrentLevelIndex { get; set; }
+    [FirestoreProperty] public int CurrentMaxLevelIndex { get; set; }
     [FirestoreProperty] public bool PuzzleUnlocked { get; set; }
     [FirestoreProperty] public Bag Bag { get; set; }
+    [FirestoreProperty] public int CurrentLevelIndex { get; set; }
+    [FirestoreProperty] public int CurrentWeaponIndex { get; set; }
+    [FirestoreProperty] public int CurrentCharacterIndex { get; set; }
 
-    public User(string name = STRING_EMPTY, int currentLevelIndex = 0, bool puzzleUnlocked = false)
+
+    public User(string name = STRING_EMPTY, int currentMaxLevelIndex = 0, bool puzzleUnlocked = false)
     {
         Name = name;
-        CurrentLevelIndex = currentLevelIndex;
+        CurrentMaxLevelIndex = currentMaxLevelIndex;
         PuzzleUnlocked = puzzleUnlocked;
         Bag = new Bag();
+        CurrentLevelIndex = 0;
+        CurrentWeaponIndex = 0;
+        CurrentCharacterIndex = 0;
     }
 
 }
@@ -71,7 +76,6 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     // User
     private CollectionReference _userCollectionReference;
     public User CurrentUser { get; private set; }
-    public int CurrentSelectedLevel { get; private set; }
 
 
     // Aplication
@@ -87,7 +91,6 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
         //##
         CurrentUser = null;
         CurrentAudio = null;
-        CurrentSelectedLevel = 0;
     }
     
     #endregion
@@ -122,8 +125,6 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     {
         await GetAudio();
         await GetUserSaved();
-
-        CurrentSelectedLevel = CurrentUser.CurrentLevelIndex;
 
         OnGetDataCompleted?.Invoke(this, EventArgs.Empty);
 
@@ -169,10 +170,12 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
             await _userCollectionReference.Document(userName).SetAsync(new Dictionary<string, object>
             {
                 { USER_FIELD_Name, CurrentUser.Name },
-                { USER_FIELD_CurrentLevelIndex, CurrentUser.CurrentLevelIndex },
+                { USER_FIELD_CurrentMaxLevelIndex, CurrentUser.CurrentMaxLevelIndex },
                 { USER_FIELD_PuzzleUnlocked, CurrentUser.PuzzleUnlocked },
-                { USER_FIELD_Bag, CurrentUser.Bag }
-
+                { USER_FIELD_Bag, CurrentUser.Bag },
+                { USER_FIELD_CurrentLevelIndex, CurrentUser.CurrentLevelIndex },
+                { USER_FIELD_CurrentWeaponIndex, CurrentUser.CurrentWeaponIndex },
+                { USER_FIELD_CurrentCharacterIndex, CurrentUser.CurrentCharacterIndex },
             });
 
             //
@@ -188,9 +191,12 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
         _userCollectionReference.Document(user.Name).UpdateAsync(new Dictionary<string, object>
         {
             { USER_FIELD_Name, user.Name },
-            { USER_FIELD_CurrentLevelIndex, user.CurrentLevelIndex },
+            { USER_FIELD_CurrentMaxLevelIndex, user.CurrentMaxLevelIndex },
             { USER_FIELD_PuzzleUnlocked , user.PuzzleUnlocked },
-            { USER_FIELD_Bag, user.Bag }
+            { USER_FIELD_Bag, user.Bag },
+            { USER_FIELD_CurrentLevelIndex, user.CurrentLevelIndex },
+            { USER_FIELD_CurrentWeaponIndex, user.CurrentWeaponIndex },
+            { USER_FIELD_CurrentCharacterIndex, user.CurrentCharacterIndex },
         });
     }
     
@@ -249,13 +255,16 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
                 User user = new User
                 {
                     Name = userData.ContainsKey(USER_FIELD_Name) ? userData[USER_FIELD_Name].ToString() : string.Empty,
-                    CurrentLevelIndex = userData.ContainsKey(USER_FIELD_CurrentLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentLevelIndex]) : 0,
+                    CurrentMaxLevelIndex = userData.ContainsKey(USER_FIELD_CurrentMaxLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentMaxLevelIndex]) : 0,
                     PuzzleUnlocked = userData.ContainsKey(USER_FIELD_PuzzleUnlocked) ? Convert.ToBoolean(userData[USER_FIELD_PuzzleUnlocked]) : false,
                     Bag = new Bag()
                     {
                         Weapon = weaponList,
                         Character = characterList,
-                    } 
+                    } ,
+                    CurrentLevelIndex = userData.ContainsKey(USER_FIELD_CurrentLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentLevelIndex]) : 0,
+                    CurrentWeaponIndex = userData.ContainsKey(USER_FIELD_CurrentWeaponIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentWeaponIndex]) : 0,
+                    CurrentCharacterIndex = userData.ContainsKey(USER_FIELD_CurrentCharacterIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentCharacterIndex]) : 0,
                 };
 
                 userList.Add(user);
@@ -304,13 +313,16 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
                     CurrentUser = new User
                     {
                         Name = userData.ContainsKey(USER_FIELD_Name) ? userData[USER_FIELD_Name].ToString() : string.Empty,
-                        CurrentLevelIndex = userData.ContainsKey(USER_FIELD_CurrentLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentLevelIndex]) : 0,
+                        CurrentMaxLevelIndex = userData.ContainsKey(USER_FIELD_CurrentMaxLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentMaxLevelIndex]) : 0,
                         PuzzleUnlocked = userData.ContainsKey(USER_FIELD_PuzzleUnlocked) ? Convert.ToBoolean(userData[USER_FIELD_PuzzleUnlocked]) : false,
                         Bag = new Bag()
                         {
                             Weapon = weaponList,
                             Character = characterList,
-                        } 
+                        },
+                        CurrentLevelIndex = userData.ContainsKey(USER_FIELD_CurrentLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentLevelIndex]) : 0,
+                        CurrentWeaponIndex = userData.ContainsKey(USER_FIELD_CurrentWeaponIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentWeaponIndex]) : 0,
+                        CurrentCharacterIndex = userData.ContainsKey(USER_FIELD_CurrentCharacterIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentCharacterIndex]) : 0,
                     };
 
                     if (string.IsNullOrEmpty(CurrentUser.Name))
@@ -336,9 +348,12 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
         _applicationCollectionReference.Document(APPLICATION_DOCUMENT_UserSaved).UpdateAsync(new Dictionary<string, object>
         {
             { USER_FIELD_Name , CurrentUser.Name },
-            { USER_FIELD_CurrentLevelIndex , CurrentUser.CurrentLevelIndex },
+            { USER_FIELD_CurrentMaxLevelIndex , CurrentUser.CurrentMaxLevelIndex },
             { USER_FIELD_PuzzleUnlocked , CurrentUser.PuzzleUnlocked },
-            { USER_FIELD_Bag, CurrentUser.Bag }
+            { USER_FIELD_Bag, CurrentUser.Bag },
+            { USER_FIELD_CurrentLevelIndex, CurrentUser.CurrentLevelIndex },
+            { USER_FIELD_CurrentWeaponIndex, CurrentUser.CurrentWeaponIndex },
+            { USER_FIELD_CurrentCharacterIndex, CurrentUser.CurrentCharacterIndex },
         });
     }
 
@@ -421,7 +436,7 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     {
         UpdateUserSaved();
 
-        TransitionManager.Instance.LoadScene(Scene.MainMenu);
+        SceneTransitionManager.Instance.LoadScene(EScene.MainMenu);
 
         Debug.Log("LoginUser");
 
@@ -442,7 +457,7 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     {
         UpdateUserSaved();
 
-        TransitionManager.Instance.LoadScene(Scene.Login);
+        SceneTransitionManager.Instance.LoadScene(EScene.Login);
     }
 
     /*
@@ -460,14 +475,18 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
      * CHANGE USER SAVED
      */
 
-    private void ChangeUserSaved(string name = STRING_EMPTY, int currentLevelIndex = -1, bool puzzleUnlocked = false, Bag bag = null)
+    private void ChangeUserSaved(string name = STRING_EMPTY, int currentMaxLevelIndex = -1, bool puzzleUnlocked = false
+        , Bag bag = null, int currentLevelIndex = -1, int currentWeaponIndex = -1, int currentCharacterIndex = -1)
     {
         CurrentUser = new User
         {
             Name = name.Equals(STRING_EMPTY) ? CurrentUser.Name : name,
-            CurrentLevelIndex = currentLevelIndex.Equals(-1) ? CurrentUser.CurrentLevelIndex : currentLevelIndex,
+            CurrentMaxLevelIndex = currentMaxLevelIndex.Equals(-1) ? CurrentUser.CurrentMaxLevelIndex : currentMaxLevelIndex,
             PuzzleUnlocked = puzzleUnlocked,
-            Bag = bag ?? CurrentUser.Bag
+            Bag = bag ?? CurrentUser.Bag,
+            CurrentLevelIndex = currentLevelIndex.Equals(-1) ? CurrentUser.CurrentLevelIndex : currentLevelIndex,
+            CurrentWeaponIndex = currentWeaponIndex.Equals(-1) ? CurrentUser.CurrentWeaponIndex : currentWeaponIndex,
+            CurrentCharacterIndex = currentCharacterIndex.Equals(-1) ? CurrentUser.CurrentCharacterIndex : currentCharacterIndex,
         };
         
         UpdateUserSaved();
@@ -481,7 +500,7 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     
     public void UpgradeLevel(int nextLevelIndex)
     {
-        ChangeUserSaved(currentLevelIndex: nextLevelIndex, puzzleUnlocked:false);
+        ChangeUserSaved(currentMaxLevelIndex: nextLevelIndex, puzzleUnlocked:false);
     }
     
     public void BuyWeapon(int weaponIndex)
@@ -494,16 +513,32 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     {
         CurrentUser.Bag.Character.Add(characterIndex);
         ChangeUserSaved();
+    }   
+    
+    public void UseLevel(int currentLevelIndex)
+    {
+        ChangeUserSaved(currentLevelIndex:currentLevelIndex);
+    }
+    
+    
+    public void UseWeapon(int currentWeaponIndex)
+    {
+        ChangeUserSaved(currentWeaponIndex:currentWeaponIndex);
+    }
+    
+    public void UseCharacter(int currentCharacterIndex)
+    {
+        ChangeUserSaved(currentCharacterIndex:currentCharacterIndex);
     }
     
     /*
      * 
      */
 
-    public void SetCurrentSelectedLevel(int currentSelectedLevel)
+    /*public void SetCurrentSelectedLevel(int currentSelectedLevel)
     {
         CurrentSelectedLevel = currentSelectedLevel;
-    }
+    }*/
     
     #endregion
 

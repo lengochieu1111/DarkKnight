@@ -4,10 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using HIEU_NL.Platformer.Script.Game;
 using HIEU_NL.Platformer.Script.Interface;
+using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
+using HIEU_NL.Platformer.SerializableClass;
 using HIEU_NL.Platformer.SO.Entity.Enemy;
 using HIEU_NL.Utilities;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 namespace HIEU_NL.Platformer.Script.Entity.Enemy
 {
@@ -27,6 +30,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
 
         //# STATS
         [SerializeField, BoxGroup("STATS"), Required] protected EnemyStats enemyStats;
+        
+        //# HEALTH
+        [SerializeField, BoxGroup("HEALTH")] protected Bar_PlatformerUI healthBar;
 
         //# STATE MACHINE
         protected StateMachine stateMachine;
@@ -61,7 +67,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         [SerializeField, Foldout("Pain")] protected bool isPaining;
         [SerializeField, Foldout("Pain")] protected bool isRequestingPain;
         
-        //## DEAD
+        //## SPAWM ITEM
+        [SerializeField, BoxGroup("SPAWM ITEM")] protected SpawnItemData spawnItemData;
 
         #region UNITY CORE
 
@@ -155,8 +162,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             {
                 PatrolPositionLeft = mapPlacementPointPlatformer.DestinationPointArray[0].transform.position;
                 PatrolPositionRight = mapPlacementPointPlatformer.DestinationPointArray[1].transform.position;
-                ChasePositionBelow = mapPlacementPointPlatformer.DestinationPointArray[2].transform.position;
-                ChasePositionAbove = mapPlacementPointPlatformer.DestinationPointArray[3].transform.position;
+                ChasePositionAbove = mapPlacementPointPlatformer.DestinationPointArray[2].transform.position;
+                ChasePositionBelow = mapPlacementPointPlatformer.DestinationPointArray[3].transform.position;
             }
             else
             {
@@ -430,6 +437,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         public virtual void ITracing()
         {
             int coefficient = isFlippingLeft ? -1 : 1;
+            coefficient = isBeginFlipLeft ? coefficient * -1 : coefficient;
             Vector3 boxCenter = new Vector2(MyTransform.position.x + Stats.AttackDataArray[attackIndex].AttackOffsetWidth * coefficient, MyTransform.position.y + Stats.AttackDataArray[attackIndex].AttackOffsetHeight);
             Vector3 boxSize = new Vector2(Stats.AttackDataArray[attackIndex].AttackRadiusWidth, Stats.AttackDataArray[attackIndex].AttackRangeHeight);
             RaycastHit2D[] hitArray = Physics2D.BoxCastAll(boxCenter, boxSize, 0f, Vector2.right, 0f, Stats.AttackLayer);
@@ -438,13 +446,18 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             {
                 foreach (RaycastHit2D hit in hitArray)
                 {
-                    if (hit.transform.TryGetComponent(out HittableObject hittableObject))
+                    if (hit.transform.TryGetComponent(out HittableObject hittableObject)
+                        && hittableObject.CanHit()
+                        && !_listHasBeenHit.Contains(hittableObject))
                     {
                         HitData hitData = new HitData(
                             damageCauser: this,
                             isCausedByPlayer: false
                         );
+                        
                         hittableObject.IHit(hitData);
+                        
+                        _listHasBeenHit.Add(hittableObject);
                     }
                 }
             }
@@ -476,7 +489,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
 
         #endregion
         
-        protected void OnDrawGizmos()
+        protected virtual void OnDrawGizmos()
         {
             Gizmos.color = Color.yellow;
             int coefficient = isFlippingLeft ? -1 : 1;
@@ -491,6 +504,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         public override bool ITakeDamage(HitData hitData)
         {
             bool result = base.ITakeDamage(hitData);
+            
+            healthBar?.Update_Bar(GetHealthPercentage());
 
             if (!result) return false;
 
@@ -504,6 +519,77 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         }
 
         #endregion
+        
+        protected override void HandleDead()
+        {
+            base.HandleDead();
+
+            SpawnRandomItem();
+        }
+
+        private void SpawnRandomItem()
+        {
+            SpawnRandomMedicine();
+        }
+        
+        private void SpawnRandomMedicine()
+        {
+            if (spawnItemData.HasMedicineHealth)
+            {
+                if (spawnItemData.MedicineHealth_Thirty_QuantityRange != Vector2.zero && Random.value > spawnItemData.MedicineHealth_Thirty_QuantityRange.y)
+                {
+                    Prefab_Platformer medicineHealth_Thirty =
+                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.ITEM_Medicien_Health_30Per,
+                            centerOfBodyTransform.position, Quaternion.identity);
+                    medicineHealth_Thirty.Activate();
+                }
+                
+                if (spawnItemData.MedicineHealth_Seventy_QuantityRange != Vector2.zero && Random.value > spawnItemData.MedicineHealth_Seventy_QuantityRange.y)
+                {
+                    Prefab_Platformer medicineHealth_Seventy =
+                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.ITEM_Medicien_Health_70Per,
+                            centerOfBodyTransform.position, Quaternion.identity);
+                    medicineHealth_Seventy.Activate();
+                }
+                
+                if (spawnItemData.MedicineHealth_Hundred_QuantityRange != Vector2.zero && Random.value > spawnItemData.MedicineHealth_Hundred_QuantityRange.y)
+                {
+                    Prefab_Platformer medicineHealth_Hundred =
+                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.ITEM_Medicien_Health_100Per,
+                            centerOfBodyTransform.position, Quaternion.identity);
+                    medicineHealth_Hundred.Activate();
+                }
+
+            }
+            
+            if (spawnItemData.HasMedicineEnergy)
+            {
+                if (spawnItemData.MedicineEnergy_Thirty_QuantityRange != Vector2.zero && Random.value > spawnItemData.MedicineEnergy_Thirty_QuantityRange.y)
+                {
+                    Prefab_Platformer medicineEnergy_Thirty =
+                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.ITEM_Medicien_Energy_30Per,
+                            centerOfBodyTransform.position, Quaternion.identity);
+                    medicineEnergy_Thirty.Activate();
+                }
+                
+                if (spawnItemData.MedicineEnergy_Seventy_QuantityRange != Vector2.zero && Random.value > spawnItemData.MedicineEnergy_Seventy_QuantityRange.y)
+                {
+                    Prefab_Platformer medicineEnergy_Seventy =
+                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.ITEM_Medicien_Energy_70Per,
+                            centerOfBodyTransform.position, Quaternion.identity);
+                    medicineEnergy_Seventy.Activate();
+                }
+                
+                if (spawnItemData.MedicineEnergy_Hundred_QuantityRange != Vector2.zero && Random.value > spawnItemData.MedicineEnergy_Hundred_QuantityRange.y)
+                {
+                    Prefab_Platformer medicineEnergy_Hundred =
+                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.ITEM_Medicien_Energy_100Per,
+                            centerOfBodyTransform.position, Quaternion.identity);
+                    medicineEnergy_Hundred.Activate();
+                }
+
+            }
+        }
 
         
     }

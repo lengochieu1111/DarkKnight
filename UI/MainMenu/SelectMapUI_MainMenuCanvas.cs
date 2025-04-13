@@ -61,7 +61,7 @@ public class SelectMapUI_MainMenuCanvas : RyoMonoBehaviour
 
         if (mapSingle.IsValid())
         {
-            bool isUnlocked = FirebaseManager.Instance.CurrentUser?.CurrentLevelIndex >= mapData.MapIndex;
+            bool isUnlocked = FirebaseManager.Instance.CurrentUser?.CurrentMaxLevelIndex >= mapData.MapIndex;
             Sprite lockState = isUnlocked ? _unlockSprite : _lockSprite;
             mapSingle.UpdateVisual(mapData, lockState, isUnlocked);
 

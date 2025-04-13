@@ -41,7 +41,7 @@ public class GameTextButton : RyoMonoBehaviour, IPointerEnterHandler, IPointerEx
     {
         ShowButtonPointer();
 
-        ((SoundManager)SoundManager.Instance).PlaySound(SoundType.Hover);
+        ((SoundManager)SoundManager.Instance).PlaySound(SoundType.Button_Menu_Highlight);
 
     }
 
@@ -52,7 +52,7 @@ public class GameTextButton : RyoMonoBehaviour, IPointerEnterHandler, IPointerEx
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        ((SoundManager)SoundManager.Instance)?.PlaySound(SoundType.Click);
+        ((SoundManager)SoundManager.Instance)?.PlaySound(SoundType.Button_Menu_Confirm);
     }
 
     /*

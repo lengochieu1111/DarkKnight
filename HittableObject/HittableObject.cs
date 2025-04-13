@@ -13,5 +13,10 @@ public class HittableObject : RyoMonoBehaviour, IHittable
         if (_damageable == null || _damageable.Value == null) return false;
         return _damageable.Value.ITakeDamage(hitData);
     }
+
+    public bool CanHit()
+    {
+        return _damageable.Value.Health > 0;
+    }
     
 }

@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using HIEU_NL.DesignPatterns.Singleton;
+using HIEU_NL.Puzzle.Script.Effect;
 using HIEU_NL.Puzzle.Script.Entity;
 using HIEU_NL.Puzzle.Script.Entity.Player;
 using HIEU_NL.Puzzle.Script.Map;
 using HIEU_NL.Puzzle.Script.ObjectPool.Multiple;
+using HIEU_NL.SO.Character;
 using HIEU_NL.SO.Map;
+using HIEU_NL.SO.Weapon;
 using HIEU_NL.Utilities;
 using NaughtyAttributes;
 using UnityEngine;
@@ -18,12 +22,13 @@ namespace HIEU_NL.Puzzle.Script.Game
         public event EventHandler OnChangedState;
         public event EventHandler OnPauseGame;
         
-        [field: SerializeField] public HUD_Puzzle HUD { get; private set; }
-        [field: SerializeField] public MapSection_Puzzle MapSection { get; private set; }
-        [field: SerializeField] public PlayerSection_Puzzle PlayerSection { get; private set; }
+        [field: SerializeField] public Map_Puzzle Map { get; private set; }
+        [field: SerializeField] public Player_Puzzle Player { get; private set; }
         
         [SerializeField] private PrefabAssetListSO_Puzzle _prefabAssetListSO;
         [SerializeField] private MapDataListSO _mapDataListSO;
+        [SerializeField] private CharacterDataListSO _characterDataListSO;
+        [SerializeField] private WeaponDataListSO _weaponDataListSO;
         
         private enum State
         {
@@ -41,15 +46,11 @@ namespace HIEU_NL.Puzzle.Script.Game
         [ShowNonSerializedField] private bool _isGamePaused;
         [ShowNonSerializedField] private bool _isGameWon;
 
-        [Header("Level")]
-        [ShowNonSerializedField] private int _currentLevelIndex;
-
         protected override void SetupValues()
         {
             base.SetupValues();
             
             //##
-            _currentLevelIndex = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex;
             _isGameWon = false;
             _isGamePaused = false;
         }
@@ -65,8 +66,7 @@ namespace HIEU_NL.Puzzle.Script.Game
             //##
             Player_Puzzle.OnPlayerActed += Player_Puzzle_OnPlayerActed;
             Player_Puzzle.OnPlayerPause += Player_Puzzle_OnPlayerPause;
-            Player_Puzzle.OnPlayerLoses += Player_Puzzle_OnPlayerLoses;
-            Player_Puzzle.OnPlayerWins += Player_Puzzle_OnPlayerWins;
+            Player_Puzzle.OnPlayerWin += Player_Puzzle_OnPlayerWin;
         }
 
         private void Update()
@@ -87,11 +87,15 @@ namespace HIEU_NL.Puzzle.Script.Game
                 case State.GamePlaying:
                     _gamePlayTimer -= Time.deltaTime;
 
-                    if (_gamePlayTimer < 0f || _gameActionCounter < 0 || _isGameWon)
+                    if (_gamePlayTimer <= 0f || _gameActionCounter <= 0)
                     {
                         _state = State.GameOver;
-
-                        OnChangedState?.Invoke(this, EventArgs.Empty);
+                        SpawnLightPillarDownEffect();
+                    }
+                    else if (_isGameWon)
+                    {
+                        _state = State.GameOver;
+                        SpawnLightPillarUpEffect();
                     }
 
                     break; 
@@ -104,9 +108,9 @@ namespace HIEU_NL.Puzzle.Script.Game
 
         #region ACTION EVENT
 
-        private void Player_Puzzle_OnPlayerActed(object sender, EventArgs e)
+        private void Player_Puzzle_OnPlayerActed(object sender, int e)
         {
-            _gameActionCounter--;
+            _gameActionCounter -= e;
         }
 
         private void Player_Puzzle_OnPlayerPause(object sender, EventArgs e)
@@ -114,17 +118,10 @@ namespace HIEU_NL.Puzzle.Script.Game
             TogglePauseGame();
         }
 
-        private void Player_Puzzle_OnPlayerLoses(object sender, EventArgs e)
-        {
-            _gameActionCounter = -1;
-        }
-        
-        private void Player_Puzzle_OnPlayerWins(object sender, EventArgs e)
+        private void Player_Puzzle_OnPlayerWin(object sender, EventArgs e)
         {
             _isGameWon = true;
-            
             FirebaseManager.Instance.UnlockPuzzleUserSaved();
-
         }
         
         #endregion
@@ -133,31 +130,36 @@ namespace HIEU_NL.Puzzle.Script.Game
 
         private void SpawnMap()
         {
-            MapSection.Map = Instantiate(_mapDataListSO.MapAssetList[_currentLevelIndex].MapPrefab_Puzzle);
-            _gamePlayTimer = _mapDataListSO.MapAssetList[_currentLevelIndex].MaxTime;
-            _gameActionCounter = _mapDataListSO.MapAssetList[_currentLevelIndex].MaxAction;
+            int levelIndex = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex;
+            Map = Instantiate(_mapDataListSO.MapAssetList[levelIndex].MapPrefab_Puzzle);
+            _gamePlayTimer = _mapDataListSO.MapAssetList[levelIndex].MaxTime;
+            _gameActionCounter = _mapDataListSO.MapAssetList[levelIndex].MaxAction;
         }
         
         private void SpawnEntities()
         {
+            int characterIndex = FirebaseManager.Instance.CurrentUser.CurrentCharacterIndex;
+            PrefabType_Puzzle playerPrefabType =
+                _characterDataListSO.CharacterDataList[characterIndex].PlayPrefab_Puzzle.PrefabType;
             Prefab_Puzzle playerPrefab = ObjectPool_Puzzle.Instance.GetPoolObject(
-                PrefabType_Puzzle.Player
-                , MapSection.Map.StartingPlayerPointTransform.transform.position);
+                playerPrefabType
+                , Map.StartingPlayerPointTransform.position);
             playerPrefab.Activate();
-            
+            Player = playerPrefab as Player_Puzzle;
+
             Prefab_Puzzle spacePortalPrefab = ObjectPool_Puzzle.Instance.GetPoolObject(
                 PrefabType_Puzzle.SpacePortal
-                , MapSection.Map.StartingSpacePortalPointTransform.transform.position);
+                , Map.StartingSpacePortalPointTransform.position);
             spacePortalPrefab.Activate();
 
             //##
-            if (MapSection.Map.MapHouseList.IsNullOrEmpty())
+            if (Map.MapHouseList.IsNullOrEmpty())
             {
                 Debug.LogWarning("Map House List is null or empty!");
                 return;
             }
             
-            foreach (MapHouse_Puzzle mapHouse in MapSection.Map.MapHouseList)
+            foreach (MapHouse_Puzzle mapHouse in Map.MapHouseList)
             {
                 if (mapHouse.MapPlacementPointList.IsNullOrEmpty())
                 {
@@ -181,6 +183,71 @@ namespace HIEU_NL.Puzzle.Script.Game
                     continue;
                 }
 
+                int currentLevelIndex = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex;
+                //## Enemy
+                if (mapHouse.MapHouseType is EMapHouseType_Puzzle.Enemy)
+                {
+                    botTypeList.Clear();
+                    switch (currentLevelIndex)
+                    {
+                        case 0:
+                            botTypeList.Add(PrefabType_Puzzle.Enemy_1);
+                            break;
+                        case 1:
+                            botTypeList.Add(PrefabType_Puzzle.Enemy_2);
+                            break;
+                        case 2:
+                            botTypeList.Add(PrefabType_Puzzle.Enemy_3);
+                            break;
+                        case 3:
+                            botTypeList.Add(PrefabType_Puzzle.Enemy_4);
+                            break;
+                    }
+                }
+                
+                //## Lock
+                if (mapHouse.MapHouseType is EMapHouseType_Puzzle.Lock)
+                {
+                    botTypeList.Clear();
+                    switch (currentLevelIndex)
+                    {
+                        case 0:
+                            botTypeList.Add(PrefabType_Puzzle.Lock_1);
+                            break;
+                        case 1:
+                            botTypeList.Add(PrefabType_Puzzle.Lock_2);
+                            break;
+                        case 2:
+                            botTypeList.Add(PrefabType_Puzzle.Lock_3);
+                            break;
+                        case 3:
+                            botTypeList.Add(PrefabType_Puzzle.Lock_4);
+                            break;
+                    }
+                }
+                
+                //## Trap
+                if (mapHouse.MapHouseType is EMapHouseType_Puzzle.Trap)
+                {
+                    botTypeList.Clear();
+                    switch (currentLevelIndex)
+                    {
+                        case 0:
+                            botTypeList.Add(PrefabType_Puzzle.Trap_1);
+                            break;
+                        case 1:
+                            botTypeList.Add(PrefabType_Puzzle.Trap_2);
+                            break;
+                        case 2:
+                            botTypeList.Add(PrefabType_Puzzle.Trap_3);
+                            break;
+                        case 3:
+                            botTypeList.Add(PrefabType_Puzzle.Trap_4);
+                            break;
+                    }
+                }
+                
+                //## Spawn bot
                 foreach (MapPlacementPoint_Puzzle mapPlacementPoint in mapHouse.MapPlacementPointList)
                 {
                     int randomIndex = Random.Range(0, botTypeList.Count);
@@ -225,11 +292,6 @@ namespace HIEU_NL.Puzzle.Script.Game
             return _gamePlayTimer;
         }
         
-        public int GetLevelIndex()
-        {
-            return _currentLevelIndex;
-        }
-
         public bool IsGamePaused()
         {
             return _isGamePaused;
@@ -252,7 +314,47 @@ namespace HIEU_NL.Puzzle.Script.Game
         
         #endregion
 
+        private void SpawnLightPillarUpEffect()
+        {
+            Prefab_Puzzle poolPrefab = ObjectPool_Puzzle.Instance.GetPoolObject(
+                PrefabType_Puzzle.EFFECT_LightPillar_Up, 
+                Map.StartingSpacePortalPointTransform.position);
+
+            if (poolPrefab is BaseEffect_Puzzle effect)
+            {
+                effect.OnDeactive += Effect_OnDeactive;
+
+                void Effect_OnDeactive(object sender, EventArgs e)
+                {
+                    OnChangedState?.Invoke(this, EventArgs.Empty);
+                    
+                    effect.OnDeactive -= Effect_OnDeactive;
+                }
+            }
+            
+            poolPrefab.Activate();
+        }
         
+        private void SpawnLightPillarDownEffect()
+        {
+            Prefab_Puzzle poolPrefab = ObjectPool_Puzzle.Instance.GetPoolObject(
+                PrefabType_Puzzle.EFFECT_LightPillar_Down, 
+                Player.transform.position);
+            
+            if (poolPrefab is BaseEffect_Puzzle effect)
+            {
+                effect.OnDeactive += Effect_OnDeactive;
+
+                void Effect_OnDeactive(object sender, EventArgs e)
+                {
+                    OnChangedState?.Invoke(this, EventArgs.Empty);
+                    
+                    effect.OnDeactive -= Effect_OnDeactive;
+                }
+            }
+            
+            poolPrefab.Activate();
+        }
         
         
     }

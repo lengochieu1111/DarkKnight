@@ -8,36 +8,20 @@ public class MainMenuCanvas : Singleton<MainMenuCanvas>
     [SerializeField] private SelectMapUI_MainMenuCanvas _selectMapUI;
     [SerializeField] private ShopUI_MainMenuCanvas _shopUI;
 
-    #region SETUP COMPONENT/VALUES
 
-    protected override void SetupComponents()
+    protected override void OnEnable()
     {
-        base.SetupComponents();
-
-        if (_mainMenuUI == null)
-        {
-            _mainMenuUI = GetComponentInChildren<MainMenuUI>(true);
-        }
-
-        if (_optionsUI == null)
-        {
-            _optionsUI = GetComponentInChildren<OptionsUI_MainMenuCanvas>(true);
-        }
-
-    }
-
-
-    protected override void ResetComponents()
-    {
-        base.SetupComponents();
-
+        base.OnEnable();
+        
+        //##
         ShowMainMenuUI();
         HideOptionsUI();
         HideSelectMapUI();
         HideShopUI();
+        
+        //##
+        MusicManager.Instance.PlayMusic_MainMenu();
     }
-
-    #endregion
 
     #region SHOW/HIDE UI
 

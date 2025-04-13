@@ -7,7 +7,7 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
     {
         [field: SerializeField] public PrefabType_Platformer PrefabType { get; private set; }
 
-        public virtual void Activate(Type data = default)
+        public virtual void Activate()
         {
             gameObject.SetActive(true);
         }

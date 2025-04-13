@@ -16,7 +16,7 @@ namespace HIEU_NL.Puzzle.Script.Entity
 
         #region Interaction
 
-        public override void ReceiveInteract(BaseEntity_Puzzle senderEntity, Vector2 receverDirection) { }
+        public override void ReceiverInteract(BaseEntity_Puzzle senderEntity, Vector2 receverDirection) { }
 
         public override void SendInteract(BaseEntity_Puzzle receverEntity, Vector2 senderDirection) { }
 

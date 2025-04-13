@@ -1,8 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Manager;
+using HIEU_NL.ObjectPool.Audio;
+using HIEU_NL.Puzzle.Script.Entity.Character;
+using HIEU_NL.Puzzle.Script.ObjectPool.Multiple;
+using HIEU_NL.Utilities;
 using UnityEngine;
-
 
 namespace HIEU_NL.Puzzle.Script.Entity
 {
@@ -11,6 +15,7 @@ namespace HIEU_NL.Puzzle.Script.Entity
         [Header("Action")] [SerializeField] protected Transform actionPointTransform;
         [SerializeField] protected Vector2 actionDirection;
         [SerializeField] protected float actionTime = 0.2f;
+        protected int actionUsageCounter;
 
         [Header("Move")] [SerializeField] protected bool isMoving;
         private Coroutine _movementCoroutine;
@@ -18,6 +23,8 @@ namespace HIEU_NL.Puzzle.Script.Entity
         [Header("Interact")] [SerializeField] protected bool isInteracting;
         private Coroutine _interactCoroutine;
 
+        [Header("Pain")] [SerializeField] protected bool isPain;
+            
         [Header("Dead")] [SerializeField] protected bool isDead;
 
         #region Setup
@@ -42,6 +49,10 @@ namespace HIEU_NL.Puzzle.Script.Entity
             base.ResetValues();
 
             canMoveInto = false;
+            isInteracting = false;
+            isMoving = false;
+            isDead = false;
+            actionUsageCounter = 0;
         }
 
         #endregion
@@ -52,6 +63,8 @@ namespace HIEU_NL.Puzzle.Script.Entity
         {
             if (CanAction())
             {
+                ActionBegin();
+                
                 actionDirection = moveDirection;
 
                 BaseEntity_Puzzle baseEntity;
@@ -64,11 +77,14 @@ namespace HIEU_NL.Puzzle.Script.Entity
                 {
                     HandleCannotMove();
                 }
-
+                
                 if (baseEntity != null && !isDead)
                 {
                     SendInteract(baseEntity, actionDirection);
                 }
+
+                ActionFinish();
+
             }
         }
 
@@ -100,20 +116,17 @@ namespace HIEU_NL.Puzzle.Script.Entity
                     baseEntity = dynamicEntityInteract;
                     return dynamicEntityInteract.CanMoveInto();
                 }
-                else
+                else if (staticEntityInteract != null)
                 {
-                    if (staticEntityInteract != null)
-                    {
-                        baseEntity = staticEntityInteract;
-                        return staticEntityInteract.CanMoveInto();
-                    }
+                    baseEntity = staticEntityInteract;
+                    return staticEntityInteract.CanMoveInto();
                 }
-
+                
                 baseEntity = null;
 
                 return false;
             }
-
+            
             baseEntity = null;
 
             return true;
@@ -121,7 +134,26 @@ namespace HIEU_NL.Puzzle.Script.Entity
 
         protected bool CanAction()
         {
-            return !isMoving && !isInteracting;
+            return !isDead && !isMoving && !isInteracting && !isPain;
+        }
+        
+        protected virtual void ActionBegin()
+        {
+            actionUsageCounter = 0;
+        }
+        
+        protected virtual void ActionFinish()
+        {
+            StartCoroutine(IE_ActionFinish());
+        }
+        
+        private IEnumerator IE_ActionFinish()
+        {
+            yield return new WaitForSeconds(actionTime);
+
+            isMoving = false;
+            isPain = false;
+            isInteracting = false;
         }
 
         #endregion
@@ -130,15 +162,25 @@ namespace HIEU_NL.Puzzle.Script.Entity
 
         protected virtual void HandleMove()
         {
+            actionUsageCounter++;
             actionPointTransform.position += (Vector3)actionDirection;
-            _movementCoroutine = StartCoroutine(Movement());
+            
+            // check interact with trap
+            if (TryActionPointCompletedInteractWithStaticEntities(out List<StaticEntity_Puzzle> staticEntitis)
+                && staticEntitis.Exists(x => x is Trap_Puzzle))
+            {
+                isPain = true;
+                actionUsageCounter++;
+            }
+            
+            _movementCoroutine = StartCoroutine(IE_Movement());
         }
 
-        private IEnumerator Movement()
+        private IEnumerator IE_Movement()
         {
-            MoveStarted();
-
             isMoving = true;
+            
+            MoveStarted();
 
             Vector3 startPos = transform.position;
             Vector3 endPos = actionPointTransform.position;
@@ -157,27 +199,39 @@ namespace HIEU_NL.Puzzle.Script.Entity
 
             transform.position = endPos;
 
-            isMoving = false;
-
             MoveCompleted();
-        }
-
-        private void SlashEffect()
-        {
             
+            isMoving = false;
         }
-
 
         protected virtual void MoveStarted()
         {
+            PlayDustTrailEffect();
+            PlayDashSound();
         }
 
         protected virtual void MoveCompleted()
         {
+            if (isPain)
+            {
+                HandlePain();
+            }
         }
 
         protected virtual void HandleCannotMove()
         {
+            // check interact with trap
+            if (TryActionPointCompletedInteractWithStaticEntities(out List<StaticEntity_Puzzle> staticEntitis)
+                && staticEntitis.Exists(x => x is Trap_Puzzle))
+            {
+                isPain = true;
+                actionUsageCounter++;
+            }
+            
+            if (isPain)
+            {
+                HandlePain();
+            }
         }
 
         #endregion
@@ -186,52 +240,94 @@ namespace HIEU_NL.Puzzle.Script.Entity
 
         public override void SendInteract(BaseEntity_Puzzle receverEntity, Vector2 senderDirection)
         {
-            _interactCoroutine = StartCoroutine(Interact(receverEntity, senderDirection));
+            if (receverEntity is DynamicEntity_Puzzle)
+            {
+                actionUsageCounter++;
+                HandleInteractWithDynamicEntity(receverEntity, senderDirection);
+            }
+            else if (receverEntity is StaticEntity_Puzzle)
+            {
+                HandleInteractWithStaticEntity(receverEntity, senderDirection);
+            }
+            
+            _interactCoroutine = StartCoroutine(IE_Interact(receverEntity, senderDirection));
         }
 
-        public override void ReceiveInteract(BaseEntity_Puzzle senderEntity, Vector2 receverDirection)
+        public override void ReceiverInteract(BaseEntity_Puzzle senderEntity, Vector2 receverDirection)
         {
 
         }
 
-        private IEnumerator Interact(BaseEntity_Puzzle receverEntity, Vector2 senderDirection)
+        private IEnumerator IE_Interact(BaseEntity_Puzzle receiverEntity, Vector2 senderDirection)
         {
             isInteracting = true;
 
-            receverEntity.ReceiveInteract(this, senderDirection);
+            receiverEntity.ReceiverInteract(this, senderDirection);
 
             yield return new WaitForSeconds(actionTime);
 
             isInteracting = false;
         }
+        
+        protected virtual void HandleInteractWithStaticEntity(BaseEntity_Puzzle receverEntity, Vector2 senderDirection)
+        { }
+
+        protected virtual void HandleInteractWithDynamicEntity(BaseEntity_Puzzle receverEntity, Vector2 senderDirection)
+        { }
 
         #endregion
 
-        protected bool TryInteractWithStaticEntities(out List<StaticEntity_Puzzle> staticEntitis)
+        protected bool TryActionPointCompletedInteractWithStaticEntities(out List<StaticEntity_Puzzle> staticEntities)
         {
-            bool isInteractive = false;
-
-            Vector2 pointToCheck = transform.position;
+            staticEntities = new List<StaticEntity_Puzzle>();
+            
+            Vector2 pointToCheck = actionPointTransform.position;
             Collider2D[] colliders = Physics2D.OverlapPointAll(pointToCheck);
+            
+            if (colliders.IsNullOrEmpty()) return false;
 
-            staticEntitis = new List<StaticEntity_Puzzle>();
-            staticEntitis.Clear();
-
-            if (colliders.Length > 0)
+            foreach (Collider2D collider in colliders)
             {
-                foreach (Collider2D collider in colliders)
+                if (collider.TryGetComponent(out StaticEntity_Puzzle staticEntity))
                 {
-                    if (collider.TryGetComponent(out StaticEntity_Puzzle staticEntity))
-                    {
-                        isInteractive = true;
-                        staticEntitis.Add(staticEntity);
-                    }
+                    staticEntities.Add(staticEntity);
                 }
             }
 
-            return isInteractive;
+            return staticEntities.IsValid();
         }
 
-    }
 
+        protected virtual void HandlePain() { }
+        
+        protected virtual void HandleDead()
+        {
+            if (isDead) return;
+            isDead = true;
+        }
+
+        #region Effect
+
+        private void PlayDustTrailEffect()
+        {
+            Prefab_Puzzle impactPrefab = ObjectPool_Puzzle.Instance.GetPoolObject(
+                PrefabType_Puzzle.EFFECT_DustTrail, position:transform.position, rotation: Quaternion.identity);
+            impactPrefab.Activate();
+        }
+        
+        private void PlayDashSound()
+        {
+            SoundType soundType = UnityEngine.Random.Range(0, 2) == 0 ? SoundType.Dash_1 : SoundType.Dash_2;
+            ((SoundManager)SoundManager.Instance).PlaySound(soundType);
+        }
+        
+        #endregion
+        
+        public bool IsPain()
+        {
+            return isPain;
+        }
+        
+    }
 }
+

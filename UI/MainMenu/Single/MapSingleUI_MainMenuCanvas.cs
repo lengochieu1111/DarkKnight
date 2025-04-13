@@ -1,3 +1,4 @@
+using HIEU_NL.Manager;
 using HIEU_NL.SO.Map;
 using TMPro;
 using UnityEngine;
@@ -30,18 +31,18 @@ public class MapSingleUI_MainMenuCanvas : RyoMonoBehaviour
     {
         if (FirebaseManager.Instance.CurrentUser == null || !_isUnlocked) return;
 
-        bool isPlayPuzzleScene = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex.Equals(_mapData.MapIndex) 
+        bool isPlayPuzzleScene = FirebaseManager.Instance.CurrentUser.CurrentMaxLevelIndex.Equals(_mapData.MapIndex) 
                                  && !FirebaseManager.Instance.CurrentUser.PuzzleUnlocked;
         
-        FirebaseManager.Instance.SetCurrentSelectedLevel(_mapData.MapIndex);
+        FirebaseManager.Instance.UseLevel(_mapData.MapIndex);
             
         if (isPlayPuzzleScene)
         {
-            TransitionManager.Instance.LoadScene(Scene.Puzzle);
+            SceneTransitionManager.Instance.LoadScene(EScene.Puzzle);
         }
         else
         {
-            TransitionManager.Instance.LoadScene(Scene.Platformer);
+            SceneTransitionManager.Instance.LoadScene(EScene.Platformer);
         }
     }
     

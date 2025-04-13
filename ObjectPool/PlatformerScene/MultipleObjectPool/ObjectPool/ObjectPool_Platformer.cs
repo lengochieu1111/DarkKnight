@@ -185,15 +185,15 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
 
         //## TEST
         
-        /*private void Update()
+        private void Update()
         {
             if (Input.GetKeyDown(KeyCode.S))
             {
-                PoolPrefab poolPrefab = MultipleObjectPool.Instance.GetPoolObject(PoolPrefabType.BOT_Mosquito_PLATFORMER);
+                Prefab_Platformer poolPrefab = ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.BOT_Beetle, transform.position, Quaternion.identity);
                 poolPrefab.Activate();
             }
 
-        }*/
+        }
     }
 }
 

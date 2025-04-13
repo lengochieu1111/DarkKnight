@@ -1,4 +1,5 @@
 using HIEU_NL.DesignPatterns.Singleton;
+using HIEU_NL.Manager;
 using HIEU_NL.Platformer.Script.Game;
 using UnityEngine;
 
@@ -6,6 +7,18 @@ public class PlatformerCanvas : Singleton<PlatformerCanvas>
 {
     [SerializeField] private PlatformerUI _platformerUI;
     [SerializeField] private PauseGameUI_PlatformerCanvas _pauseGameUI;
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        
+        //##
+        ShowPlatformerUI();
+        HidePauseGameUI();
+        
+        //##
+        MusicManager.Instance.PlayMusic_Platformer();
+    }
 
     protected override void Start()
     {
@@ -15,29 +28,6 @@ public class PlatformerCanvas : Singleton<PlatformerCanvas>
         GameMode_Platformer.Instance.OnPauseGame += GameManager_OnPauseGame;
     }
 
-    protected override void SetupComponents()
-    {
-        base.SetupComponents();
-
-        if (_platformerUI == null)
-        {
-            _platformerUI = GetComponentInChildren<PlatformerUI>(true);
-        }
-
-        if (_pauseGameUI == null)
-        {
-            _pauseGameUI = GetComponentInChildren<PauseGameUI_PlatformerCanvas>(true);
-        }
-        
-    }
-
-    protected override void ResetComponents()
-    {
-        base.ResetComponents();
-
-        ShowPuzzleUI();
-        HidePauseGameUI();
-    }
 
     /*
      *
@@ -45,16 +35,16 @@ public class PlatformerCanvas : Singleton<PlatformerCanvas>
 
     private void GameManager_OnChangedState(object sender, System.EventArgs e)
     {
-        if (!GameMode_Platformer.Instance.IsGameOver()) return;
+        if (GameMode_Platformer.Instance.IsGamePlaying()) return;
 
         if (GameMode_Platformer.Instance.IsGameWon)
         {
-            TransitionManager.Instance.LoadScene(Scene.MainMenu);
+            SceneTransitionManager.Instance.LoadScene(EScene.MainMenu);
             // Choice : next level - main menu
         }
         else
         {
-            TransitionManager.Instance.LoadScene(Scene.Platformer, true);
+            SceneTransitionManager.Instance.ReloadCurrentScene();
         }
         
     }
@@ -75,7 +65,7 @@ public class PlatformerCanvas : Singleton<PlatformerCanvas>
      *
      */
 
-    public void ShowPuzzleUI()
+    public void ShowPlatformerUI()
     {
         _platformerUI.Show();
     }

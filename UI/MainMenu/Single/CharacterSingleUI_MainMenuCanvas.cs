@@ -30,7 +30,6 @@ namespace UI.MainMenu.Single
         private void Select()
         {
             OnSelectCharacter?.Invoke(this, _characterData);
-            // Unlock or Lock
         }
     
         public void UpdateVisual(CharacterData characterData, bool isUnlock)

@@ -2,6 +2,8 @@ using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using HIEU_NL.Puzzle.Script.Game;
+using HIEU_NL.Utilities;
+using NaughtyAttributes;
 using TMPro;
 using UnityEngine;
 
@@ -10,28 +12,19 @@ public class PuzzleUI : RyoMonoBehaviour
     [SerializeField] private TextMeshProUGUI _actionText;
     [SerializeField] private TextMeshProUGUI _levelText;
     [SerializeField] private TextMeshProUGUI _timeText;
-
-    protected override void SetupComponents()
-    {
-        base.SetupComponents();
-
-        if (_actionText == null)
-        {
-            _actionText = transform.Find("ActionText")?.GetComponent<TextMeshProUGUI>();
-        }        
-        
-        if (_levelText == null)
-        {
-            _levelText = transform.Find("LevelText")?.GetComponent<TextMeshProUGUI>();
-        }       
-        
-        if (_timeText == null)
-        {
-            _timeText = transform.Find("TimeText")?.GetComponent<TextMeshProUGUI>();
-        }
-
-    }
-
+    
+    [HorizontalLine]
+    [SerializeField] private float _actionZoomInScale = 1.2f;
+    [SerializeField] private float _actionZoomOutScale = 1f;
+    [SerializeField] private float _actionZoomInDuration = 0.1f;
+    [SerializeField] private float _actionZoomOutDuration = 0.2f;
+    
+    [HorizontalLine]
+    [SerializeField] private float _timeTextZoomInScale = 1.2f;
+    [SerializeField] private float _timeTextZoomOutScale = 1f;
+    [SerializeField] private float _timeTextZoomInDuration = 0.3f;
+    [SerializeField] private float _timeTextZoomOutDuration = 0.4f;
+    
     private void Update()
     {
         if (GameMode_Puzzle.Instance.IsGamePlaying())
@@ -43,13 +36,33 @@ public class PuzzleUI : RyoMonoBehaviour
     private void UpdateVisual()
     {
         // action
-        string newActionText = GameMode_Puzzle.Instance.GetGameActionCounter().ToString();
+        string newActionText;
+        bool isEndOfActionCount = GameMode_Puzzle.Instance.GetGameActionCounter() <= 0;
+        if (isEndOfActionCount)
+        {
+            newActionText = "X";
+        }
+        else
+        {
+            newActionText = GameMode_Puzzle.Instance.GetGameActionCounter().ToString();
+        }
+
+        if ((GameMode_Puzzle.Instance.Player.IsValid() && GameMode_Puzzle.Instance.Player.IsPain())
+            || isEndOfActionCount)
+        {
+            _actionText.color = Color.red;
+        }
+        else
+        {
+            _actionText.color = Color.white;
+        }
+        
         if (newActionText != _actionText.text)
         {
-            _actionText.transform.DOScale(1.2f, 0.3f).SetEase(Ease.OutQuad).OnComplete(() =>
+            _actionText.transform.DOScale(_actionZoomInScale, _actionZoomInDuration).SetEase(Ease.OutQuad).OnComplete(() =>
             {
                 _actionText.text = newActionText;
-                _actionText.transform.DOScale(1f, 0.4f).SetEase(Ease.OutQuad);
+                _actionText.transform.DOScale(_actionZoomOutScale, _actionZoomOutDuration).SetEase(Ease.OutQuad);
             });
         }
 
@@ -61,16 +74,16 @@ public class PuzzleUI : RyoMonoBehaviour
 
         if (newTimeText != _timeText.text)
         {
-            _timeText.transform.DOScale(1.2f, 0.3f).SetEase(Ease.OutQuad).OnComplete(() =>
+            _timeText.transform.DOScale(_timeTextZoomInScale, _timeTextZoomInDuration).SetEase(Ease.OutQuad).OnComplete(() =>
             {
                 _timeText.text = newTimeText;
-                _timeText.transform.DOScale(1f, 0.4f).SetEase(Ease.OutQuad);
+                _timeText.transform.DOScale(_timeTextZoomOutScale, _timeTextZoomOutDuration).SetEase(Ease.OutQuad);
             });
         }
 
         // level
-        int levelIndex = GameMode_Puzzle.Instance.GetLevelIndex() + 1;
-        string newlevelText = IntToRoman(levelIndex).ToString();
+        int levelIndex = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex + 1;
+        string newlevelText = IntToRoman(levelIndex);
         _levelText.text = newlevelText;
     }
 

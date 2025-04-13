@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using HIEU_NL.DesignPatterns.Singleton;
-using UnityEngine.SceneManagement;
 
 public class LoginCanvas : Singleton<LoginCanvas>
 {
@@ -10,39 +9,19 @@ public class LoginCanvas : Singleton<LoginCanvas>
     [SerializeField] private NewProfileUI_LoginCanvas _newProfileUI;
     [SerializeField] private SelectProfileUI_LoginCanvas _selectProfileUI;
 
-    #region SETUP COMPONET/VALUES
-
-    protected override void SetupComponents()
-    {
-        base.SetupComponents();
-
-        if (_loginUI == null)
-        {
-            _loginUI = GetComponentInChildren<LoginUI>(true);
-        }
-        
-        if (_newProfileUI == null)
-        {
-            _newProfileUI = GetComponentInChildren<NewProfileUI_LoginCanvas>(true);
-        }
-        
-        if (_selectProfileUI == null)
-        {
-            _selectProfileUI = GetComponentInChildren<SelectProfileUI_LoginCanvas>(true);
-        }
-
-    }
 
     protected override void OnEnable()
     {
         base.OnEnable();
+        
         //##
         ShowLoginUI();
         HideNewProfileUI();
         HideSelectProfileUI();
+        
+        //##
+        MusicManager.Instance.PlayMusic_Login();
     }
-
-    #endregion
 
     #region SHOW/HIDE UI
 

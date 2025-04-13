@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using HIEU_NL.DesignPatterns.Singleton;
+using HIEU_NL.Manager;
 using HIEU_NL.Puzzle.Script.Game;
 
 public class PuzzleCanvas : Singleton<PuzzleCanvas>
@@ -9,36 +10,24 @@ public class PuzzleCanvas : Singleton<PuzzleCanvas>
     [SerializeField] private PuzzleUI _puzzleUI;
     [SerializeField] private PauseGameUI_PuzzleCanvas _pauseGameUI;
 
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        
+        //##
+        ShowPuzzleUI();
+        HidePauseGameUI();
+        
+        //##
+        MusicManager.Instance.PlayMusic_Puzzle();
+    }
+
     protected override void Start()
     {
         base.Start();
 
         GameMode_Puzzle.Instance.OnChangedState += GameManager_OnChangedState;
         GameMode_Puzzle.Instance.OnPauseGame += GameManager_OnPauseGame;
-    }
-
-    protected override void SetupComponents()
-    {
-        base.SetupComponents();
-
-        if (_puzzleUI == null)
-        {
-            _puzzleUI = GetComponentInChildren<PuzzleUI>(true);
-        }
-
-        if (_pauseGameUI == null)
-        {
-            _pauseGameUI = GetComponentInChildren<PauseGameUI_PuzzleCanvas>(true);
-        }
-        
-    }
-
-    protected override void ResetComponents()
-    {
-        base.ResetComponents();
-
-        ShowPuzzleUI();
-        HidePauseGameUI();
     }
 
     /*
@@ -51,11 +40,11 @@ public class PuzzleCanvas : Singleton<PuzzleCanvas>
 
         if (GameMode_Puzzle.Instance.IsGameWon())
         {
-            TransitionManager.Instance.LoadScene(Scene.Platformer);
+            SceneTransitionManager.Instance.LoadScene(EScene.Platformer);
         }
         else
         {
-            TransitionManager.Instance.LoadScene(Scene.Puzzle, true);
+            SceneTransitionManager.Instance.ReloadCurrentScene();
         }
         
     }

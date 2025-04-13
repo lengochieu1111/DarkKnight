@@ -14,6 +14,7 @@ namespace HIEU_NL.Platformer.Script.Entity
         public event EventHandler<HitData> OnTakeDamage;
         public event EventHandler OnDead;
         
+        
         [field: SerializeField, BoxGroup("MAP HOUSE")] public EMapHouseType_Platformer MapHouseTypePlatformer { get; private set; }
         [field: SerializeField, BoxGroup("MAP HOUSE")] public EBotPlacementType_Platformer BotPlacementTypePlatformer { get; private set; }
         [FormerlySerializedAs("MapPlacementPoint")] [field: SerializeField, BoxGroup("MAP HOUSE"), ReadOnly] public MapPlacementPoint_Platformer mapPlacementPointPlatformer;
@@ -228,6 +229,8 @@ namespace HIEU_NL.Platformer.Script.Entity
             //## Dead Event
             if (isDead)
             {
+                HandleDead();
+                
                 OnDead?.Invoke(this, EventArgs.Empty);
             }
 
@@ -247,7 +250,10 @@ namespace HIEU_NL.Platformer.Script.Entity
 
         #endregion
 
-
+        protected virtual void HandleDead()
+        {
+            
+        }
 
     }
 }

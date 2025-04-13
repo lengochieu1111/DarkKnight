@@ -37,7 +37,40 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
         Enemy_2,
         Enemy_3,
         
-        Player
+        //## Player
+        Player_1,
+        Player_2,
+        
+        //## Effect
+        EFFECT_Slash_1_Blue,
+        EFFECT_Slash_2_Blue,
+        
+        EFFECT_Slash_1_Red,
+        EFFECT_Slash_2_Red,
+        
+        EFFECT_Slash_1_Purple,
+        EFFECT_Slash_2_Purple,
+        
+        //## ITEM
+        
+        ITEM_Medicien_Health_30Per,
+        ITEM_Medicien_Health_70Per,
+        ITEM_Medicien_Health_100Per,
+        
+        ITEM_Medicien_Energy_30Per,
+        ITEM_Medicien_Energy_70Per,
+        ITEM_Medicien_Energy_100Per,
+        
+        //## Effect
+        EFFECT_PickUp_Medicine_Health_Effect,
+        EFFECT_PickUp_Medicine_Energy_Effect,
+        
+        //## Bot
+        BOT_Beetle,
+        
+        //## Others
+        Projectile_Beetle,
+        
         
     }
     

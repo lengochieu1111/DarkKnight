@@ -8,6 +8,8 @@ namespace HIEU_NL.Puzzle.Script.Effect
 {
     public class BaseEffect_Puzzle : Prefab_Puzzle
     {
+        public event EventHandler OnDeactive;
+        
         [SerializeField, BoxGroup("ANIMATION")]
         private bool _deactiveAfterAnimationEnd;
 
@@ -59,6 +61,12 @@ namespace HIEU_NL.Puzzle.Script.Effect
             }
         }
 
+        public override void Deactivate()
+        {
+            OnDeactive?.Invoke(this, EventArgs.Empty);
+            
+            base.Deactivate();
+        }
     }
 
 }

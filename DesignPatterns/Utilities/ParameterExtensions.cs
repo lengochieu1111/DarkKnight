@@ -18,8 +18,8 @@ namespace HIEU_NL.Utilities
 
         public static class Window
         {
-            public const int WINDOW_HEIGHT = 1080;
-            public const int WINDOW_WIDTH = 1920;
+            public static int WindowHeight = Screen.height; // int windowWidth = Screen.currentResolution.width;
+            public static int WindowWidth = Screen.width;
         }
 
         public static class FirestoreDatabase
@@ -28,11 +28,14 @@ namespace HIEU_NL.Utilities
 
             //##
             public const string USER_FIELD_Name = "Name";
-            public const string USER_FIELD_CurrentLevelIndex = "CurrentLevelIndex";
+            public const string USER_FIELD_CurrentMaxLevelIndex = "CurrentMaxLevelIndex";
             public const string USER_FIELD_PuzzleUnlocked = "PuzzleUnlocked";
             public const string USER_FIELD_Bag = "Bag";
             public const string USER_FIELD_Bag_Weapon = "Weapon";
             public const string USER_FIELD_Bag_Character = "Character";
+            public const string USER_FIELD_CurrentLevelIndex = "CurrentLevelIndex";
+            public const string USER_FIELD_CurrentWeaponIndex = "CurrentWeaponIndex";
+            public const string USER_FIELD_CurrentCharacterIndex = "CurrentCharacterIndex";
 
             //##
             public const string COLLECTION_Application = "Application";

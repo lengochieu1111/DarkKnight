@@ -1,11 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using HIEU_NL.Platformer.Script.Map;
-using HIEU_NL.Puzzle.Script.Map;
+using HIEU_NL.Platformer.Script.Entity.Player;
+using HIEU_NL.Puzzle.Script.Entity.Player;
 using NaughtyAttributes;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace HIEU_NL.SO.Character
 {
@@ -15,11 +14,19 @@ namespace HIEU_NL.SO.Character
     [Serializable]
     public class CharacterData
     {
+        //## PUZZLE
+        [BoxGroup("PUZZLE")] public Player_Puzzle PlayPrefab_Puzzle;
+        
+        //## PLATFORMER
+        [BoxGroup("PLATFORMER")] public Player_Platformer PlayPrefab_Platformer;
+        
         //## INFORMATION
         [BoxGroup("INFORMATION")] public string CharacterName;
+        [BoxGroup("INFORMATION")] public int CharacterIndex;
         [BoxGroup("INFORMATION")] public int CharacterCost;
         [BoxGroup("INFORMATION")] public string CharacterDetail;
         [BoxGroup("INFORMATION"), ShowAssetPreview] public Sprite CharacterSprite;
+
     }
 
 

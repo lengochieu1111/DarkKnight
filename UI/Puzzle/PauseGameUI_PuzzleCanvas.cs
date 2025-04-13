@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Manager;
 using HIEU_NL.Puzzle.Script.Game;
 using TMPro;
 using UnityEngine;
@@ -101,7 +102,7 @@ public class PauseGameUI_PuzzleCanvas : RyoMonoBehaviour
 
     private void Restart()
     {
-        TransitionManager.Instance.LoadScene(Scene.Puzzle, true);
+        SceneTransitionManager.Instance.LoadScene(EScene.Puzzle);
     }
     
     private void Music()
@@ -120,7 +121,7 @@ public class PauseGameUI_PuzzleCanvas : RyoMonoBehaviour
     
     private void MainMenu()
     {
-        TransitionManager.Instance.LoadScene(Scene.MainMenu);
+        SceneTransitionManager.Instance.LoadScene(EScene.MainMenu);
     }
 
     private void Exit()

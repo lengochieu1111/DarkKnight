@@ -1,8 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Manager;
+using HIEU_NL.ObjectPool.Audio;
 using HIEU_NL.Puzzle.Script.Entity.Character;
-using HIEU_NL.Puzzle.Script.Entity.Enemy;
 using HIEU_NL.Puzzle.Script.Game;
 using HIEU_NL.Puzzle.Script.ObjectPool.Multiple;
 using static HIEU_NL.Utilities.ParameterExtensions.Animation;
@@ -13,15 +14,14 @@ namespace HIEU_NL.Puzzle.Script.Entity.Player
 {
     public class Player_Puzzle : DynamicEntity_Puzzle
     {
-        public static event EventHandler OnPlayerActed;
+        public static event EventHandler<int> OnPlayerActed;
         public static event EventHandler OnPlayerPause;
-        public static event EventHandler OnPlayerLoses;
-        public static event EventHandler OnPlayerWins;
+        public static event EventHandler OnPlayerWin;
 
         private PuzzlePLayerInputActions _inputActions;
 
-        [Header("Animator")] [SerializeField] private Animator _animator;
-        // [ShowNonSerializedField] private bool _isFlippingLeft;
+        [Header("Animator")] 
+        [SerializeField] private Animator _animator;
         [ShowNonSerializedField] private bool _isHavingKey;
 
         protected override void Awake()
@@ -48,16 +48,6 @@ namespace HIEU_NL.Puzzle.Script.Entity.Player
             _inputActions.Player.Disable();
         }
 
-        protected override void SetupComponents()
-        {
-            base.SetupComponents();
-
-            if (_animator == null)
-            {
-                _animator = GetComponentInChildren<Animator>();
-            }
-        }
-
         #region Input Action
 
         private void Player_Action_started(UnityEngine.InputSystem.InputAction.CallbackContext obj)
@@ -71,11 +61,28 @@ namespace HIEU_NL.Puzzle.Script.Entity.Player
             RequestPauseGame();
         }
 
-        #endregion
+        protected override void ActionFinish()
+        {
+            base.ActionFinish();
 
-        /*
-         *
-         */
+            bool isWin = false;
+            // check interact with space portal
+            if (TryActionPointCompletedInteractWithStaticEntities(out List<StaticEntity_Puzzle> staticEntitis)
+                && staticEntitis.Exists(x => x is SpacePortal_Puzzle))
+            {
+                isWin = true;
+                _inputActions.Player.Disable();
+                OnPlayerWin?.Invoke(this, EventArgs.Empty);
+            }
+
+            if (!isWin)
+            {
+                OnPlayerActed?.Invoke(this, actionUsageCounter);
+            }
+
+        }
+
+        #endregion
 
         #region Move
 
@@ -88,67 +95,12 @@ namespace HIEU_NL.Puzzle.Script.Entity.Player
                     Flip(moveDirection);
                 }
 
-                ActionEffect();
-
                 base.RequestAction(moveDirection);
             }
-            else if (GameMode_Puzzle.Instance.GetGameActionCounter() == 0)
+            else
             {
-                OnPlayerLoses?.Invoke(this, EventArgs.Empty);
+                HandleDead();
             }
-        }
-
-        protected override void MoveStarted()
-        {
-            base.MoveStarted();
-
-            OnPlayerActed?.Invoke(this, EventArgs.Empty);
-        }
-
-        protected override void MoveCompleted()
-        {
-            base.MoveCompleted();
-
-            // check interact with trap, space portal
-            if (TryInteractWithStaticEntities(out List<StaticEntity_Puzzle> staticEntitis))
-            {
-                foreach (StaticEntity_Puzzle entity in staticEntitis)
-                {
-                    if (entity is Trap_Puzzle)
-                    {
-                        HandleHit();
-
-                        return;
-                    }
-                    else if (entity is SpacePortal_Puzzle)
-                    {
-                        OnPlayerWins?.Invoke(this, EventArgs.Empty);
-
-                        return;
-                    }
-                }
-            }
-
-        }
-
-        protected override void HandleCannotMove()
-        {
-            base.HandleCannotMove();
-
-            // check interact with trap
-            if (TryInteractWithStaticEntities(out List<StaticEntity_Puzzle> staticEntitis))
-            {
-                foreach (StaticEntity_Puzzle entity in staticEntitis)
-                {
-                    if (entity is Trap_Puzzle)
-                    {
-                        HandleHit();
-
-                        return;
-                    }
-                }
-            }
-
         }
 
         private void Flip(Vector2 moveDirection)
@@ -167,24 +119,9 @@ namespace HIEU_NL.Puzzle.Script.Entity.Player
 
         #region Interact
 
-        public override void SendInteract(BaseEntity_Puzzle receverEntity, Vector2 senderDirection)
+        public override void ReceiverInteract(BaseEntity_Puzzle senderEntity, Vector2 receverDirection)
         {
-            base.SendInteract(receverEntity, senderDirection);
-
-            if (receverEntity is Stone_Puzzle)
-            {
-                OnPlayerActed?.Invoke(this, EventArgs.Empty);
-            }
-            else if (receverEntity is Enemy_Puzzle)
-            {
-                OnPlayerActed?.Invoke(this, EventArgs.Empty);
-            }
-
-        }
-
-        public override void ReceiveInteract(BaseEntity_Puzzle senderEntity, Vector2 receverDirection)
-        {
-            base.ReceiveInteract(senderEntity, receverDirection);
+            base.ReceiverInteract(senderEntity, receverDirection);
 
             if (senderEntity is Key_Puzzle)
             {
@@ -192,36 +129,16 @@ namespace HIEU_NL.Puzzle.Script.Entity.Player
             }
             else if (senderEntity is Lock_Puzzle)
             {
-                _isHavingKey = false;
+                // _isHavingKey = false;
 
                 HandleMove();
             }
         }
-
-        #endregion
-
-        private void HandleHit()
-        {
-            PlayAnimState_Hit();
-
-            OnPlayerActed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void PlayAnimState_Hit()
-        {
-            // _animator.SetTrigger(ParameterExtensions.Animation.ANIM_PARAMETER_HIT);
-        }
-
-        private void RequestPauseGame()
-        {
-            if (GameMode_Puzzle.Instance.IsGamePlaying())
-            {
-                OnPlayerPause?.Invoke(this, EventArgs.Empty);
-            }
-        }
         
-        private void ActionEffect()
+        protected override void HandleInteractWithStaticEntity(BaseEntity_Puzzle receverEntity, Vector2 senderDirection)
         {
+            base.HandleInteractWithStaticEntity(receverEntity, senderDirection);
+            
             /*Vector2 actionPosition = (Vector2)actionPointTransform.position + actionDirection;
             Vector2 attackDirection = actionPosition - (Vector2)transform.position;
 
@@ -232,12 +149,71 @@ namespace HIEU_NL.Puzzle.Script.Entity.Player
             {
                 actionRotation = Quaternion.Euler(-180, actionRotation.eulerAngles.y, actionRotation.eulerAngles.z);
             }
-            
+
             Prefab_Puzzle playerPrefab = ObjectPool_Puzzle.Instance.GetPoolObject(
                 PrefabType_Puzzle.EFFECT_Slash_1_Normal, position:actionPosition, rotation: actionRotation, parent: actionPointTransform);
             playerPrefab.Activate();*/
+            
+            if (receverEntity is Lock_Puzzle && !_isHavingKey)
+            {
+                actionUsageCounter++;
+                _animator.CrossFadeInFixedTime(ANIM_HASH_Attack, 0f);
+            }
 
+        }
+
+        protected override void HandleInteractWithDynamicEntity(BaseEntity_Puzzle receverEntity, Vector2 senderDirection)
+        {
+            base.HandleInteractWithDynamicEntity(receverEntity, senderDirection);
+            
             _animator.CrossFadeInFixedTime(ANIM_HASH_Attack, 0f);
+        }
+
+        #endregion
+
+        protected override void HandlePain()
+        {
+            base.HandlePain();
+
+            PlayBloodEffect();
+            PlayPainSound();
+        }
+
+        protected override void HandleDead()
+        {
+            base.HandleDead();
+            
+            _inputActions.Player.Disable();
+        }
+
+        #region Effect
+        
+        private void PlayBloodEffect()
+        {
+            Prefab_Puzzle impactPrefab = ObjectPool_Puzzle.Instance.GetPoolObject(
+                PrefabType_Puzzle.EFFECT_Blood, position:transform.position, rotation: Quaternion.identity);
+            impactPrefab.Activate();
+        }
+        
+        private void PlayPainSound()
+        {
+            SoundType soundType = UnityEngine.Random.Range(0, 2) == 0 ? SoundType.Spike_Damage_1 : SoundType.Spike_Damage_1;
+            ((SoundManager)SoundManager.Instance).PlaySound(soundType);
+        }
+        
+        #endregion
+        
+        
+        /*
+         * 
+         */
+        
+        private void RequestPauseGame()
+        {
+            if (GameMode_Puzzle.Instance.IsGamePlaying())
+            {
+                OnPlayerPause?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /*

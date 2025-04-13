@@ -1,21 +1,31 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using HIEU_NL.Platformer.Script.Map;
-using HIEU_NL.Puzzle.Script.Map;
+using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using NaughtyAttributes;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace HIEU_NL.SO.Weapon
 {
+    [Serializable]
+    public class WeaponAttackData
+    {
+        [BoxGroup("PLATFORMER")] public PrefabType_Platformer AttackEffectOne;
+        [BoxGroup("PLATFORMER")] public PrefabType_Platformer AttackEffectTwo;
+    }
+    
+
     /// <summary>
     /// Map Data
     /// </summary>
     [Serializable]
     public class WeaponData
     {
+        //## PLATFORMER
+        [BoxGroup("PLATFORMER")] public WeaponAttackData WeaponPrefab_Platformer;
+        
         [BoxGroup("INFORMATION")] public string WeaponName;
+        [BoxGroup("INFORMATION")] public int WeaponIndex;
         [BoxGroup("INFORMATION")] public int WeaponCost;
         [BoxGroup("INFORMATION")] public string WeaponDetail;
         [BoxGroup("INFORMATION"), ShowAssetPreview] public Sprite WeaponSprite;
