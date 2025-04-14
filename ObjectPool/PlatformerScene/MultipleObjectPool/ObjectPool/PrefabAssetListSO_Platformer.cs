@@ -71,6 +71,14 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
         //## Others
         Projectile_Beetle,
         
+        //## Boss
+        BOSS_Bringer,
+        BOSS_Women__,
+        BOSS_Warrior,
+        BOSS_Axe__,
+        
+        //## Others
+        Spell_Bringer,
         
     }
     

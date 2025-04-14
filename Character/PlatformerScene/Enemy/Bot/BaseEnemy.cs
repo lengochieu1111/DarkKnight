@@ -2,6 +2,7 @@ using System;
 using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using HIEU_NL.Platformer.Script.Game;
 using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
@@ -64,8 +65,11 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         private List<HittableObject> _listHasBeenHit = new();
 
         //## PAIN
+        [SerializeField, Foldout("Pain")] protected bool canPain;
         [SerializeField, Foldout("Pain")] protected bool isPaining;
         [SerializeField, Foldout("Pain")] protected bool isRequestingPain;
+        [SerializeField, Foldout("Pain")] protected float painRecoveryTime = 5f;
+        
         
         //## SPAWM ITEM
         [SerializeField, BoxGroup("SPAWM ITEM")] protected SpawnItemData spawnItemData;
@@ -114,7 +118,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
                 base.OnEnable();
 
                 stateMachine.OnChangeState += StateMachine_OnChangeState;
-                OnTakeDamage += Self_OnTakeDamage;
+                // OnTakeDamage += Self_OnTakeDamage;
             }
 
             protected virtual void Update()
@@ -141,7 +145,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             {
                 base.OnDisable();
                 
-                OnTakeDamage -= Self_OnTakeDamage;
+                // OnTakeDamage -= Self_OnTakeDamage;
                 stateMachine.OnChangeState -= StateMachine_OnChangeState;
             }
 
@@ -195,6 +199,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             attackIndex = 0;
             
             //##
+            canPain = true;
             isPaining = false;
             isRequestingPain = false;
 
@@ -275,7 +280,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         
         protected virtual bool CanAnyToPain()
         {
-            return !isDead && isRequestingPain && !isPaining && currentState is not BaseEnemyState.State.Pain;
+            return !isDead && canPain && isRequestingPain && !isPaining && currentState is not BaseEnemyState.State.Pain;
         }
         
         protected virtual bool CanAnyToDead()
@@ -337,6 +342,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             currentState = BaseEnemyState.State.Pain;
             isRequestingPain = false;
             isPaining = true;
+            canPain = false;
+            
+            UT_PainRecovery().Forget();
         }
 
         public virtual void Finish_PainState()
@@ -349,12 +357,12 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         public virtual void Begin_DeadState()
         {
             currentState = BaseEnemyState.State.Dead;
-            isDead = true;
+            // isDead = true;
         }
 
         public virtual void Finish_DeadState()
         {
-            isDead = false;
+            // isDead = false;
         }
 
         #endregion
@@ -373,11 +381,20 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         {
             int coefficient = isFlippingLeft ? -1 : 1;
             coefficient = isBeginFlipLeft ? coefficient * -1 : coefficient;
-            
-            Vector3 boxCenter = new Vector2(MyTransform.position.x + Stats.AttackDataArray[attackIndex].AttackOffsetWidth * coefficient, MyTransform.position.y + Stats.AttackDataArray[attackIndex].AttackOffsetHeight);
-            Vector3 boxSize = new Vector2(Stats.AttackDataArray[attackIndex].AttackRadiusWidth, Stats.AttackDataArray[attackIndex].AttackRangeHeight);
+
+            Vector3 boxCenter =
+                new Vector2(MyTransform.position.x + Stats.AttackDataArray[attackIndex].AttackOffsetWidth * coefficient,
+                    MyTransform.position.y + Stats.AttackDataArray[attackIndex].AttackOffsetHeight);
+            Vector3 boxSize = new Vector2(Stats.AttackDataArray[attackIndex].AttackRadiusWidth,
+                Stats.AttackDataArray[attackIndex].AttackRangeHeight);
             RaycastHit2D hit = Physics2D.BoxCast(boxCenter, boxSize, 0f, Vector2.right, 0f, Stats.AttackLayer);
             return hit.collider != null;
+        }
+
+        protected virtual async UniTask UT_PainRecovery()
+        {
+            await UniTask.WaitForSeconds(painRecoveryTime);
+            canPain = true;
         }
         
         #endregion
@@ -520,12 +537,24 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
 
         #endregion
         
+        protected override void HandlePain()
+        {
+            base.HandlePain();
+            
+            //##
+            if (canPain)
+            {
+                isRequestingPain = true;
+            }
+        }
+        
         protected override void HandleDead()
         {
             base.HandleDead();
 
             SpawnRandomItem();
         }
+        
 
         private void SpawnRandomItem()
         {

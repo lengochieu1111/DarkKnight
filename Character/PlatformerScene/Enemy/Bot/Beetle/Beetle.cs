@@ -10,10 +10,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Beetle
         //# STATE MACHINE
         private Beetle_State.IdleState _idleState; //## Default State
         
-        //## PAIN
-        [SerializeField, Foldout("Pain")] private float _stunHealthPercentage = 0.3f;
-        public float StunHealthPercentage => _stunHealthPercentage;
-        
         [SerializeField, Foldout("Attack")] private Transform[] _projectileTransform;
 
 

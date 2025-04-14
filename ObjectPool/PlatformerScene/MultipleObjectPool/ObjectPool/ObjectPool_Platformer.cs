@@ -189,7 +189,8 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
         {
             if (Input.GetKeyDown(KeyCode.S))
             {
-                Prefab_Platformer poolPrefab = ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.BOT_Beetle, transform.position, Quaternion.identity);
+                Prefab_Platformer poolPrefab = GetPoolObject(PrefabType_Platformer.BOSS_Bringer, transform.position,
+                        Quaternion.identity);
                 poolPrefab.Activate();
             }
 

@@ -6,6 +6,8 @@ using UnityEngine;
 public class PlatformerCanvas : Singleton<PlatformerCanvas>
 {
     [SerializeField] private PlatformerUI _platformerUI;
+    [SerializeField] private BossBattleUI_PlatformerCanvas _bossBattleUI;
+    [SerializeField] private EndGameUI_PlatformerCanvas _endGameUI;
     [SerializeField] private PauseGameUI_PlatformerCanvas _pauseGameUI;
 
     protected override void OnEnable()
@@ -14,7 +16,9 @@ public class PlatformerCanvas : Singleton<PlatformerCanvas>
         
         //##
         ShowPlatformerUI();
+        HideBossBattleUI();
         HidePauseGameUI();
+        HideEndGameUI();
         
         //##
         MusicManager.Instance.PlayMusic_Platformer();
@@ -25,6 +29,7 @@ public class PlatformerCanvas : Singleton<PlatformerCanvas>
         base.Start();
 
         GameMode_Platformer.Instance.OnChangedState += GameManager_OnChangedState;
+        GameMode_Platformer.Instance.OnBossBattle += GameManager_OnBossBattle;
         GameMode_Platformer.Instance.OnPauseGame += GameManager_OnPauseGame;
     }
 
@@ -35,20 +40,18 @@ public class PlatformerCanvas : Singleton<PlatformerCanvas>
 
     private void GameManager_OnChangedState(object sender, System.EventArgs e)
     {
-        if (GameMode_Platformer.Instance.IsGamePlaying()) return;
-
-        if (GameMode_Platformer.Instance.IsGameWon)
+        if (GameMode_Platformer.Instance.IsGameOver())
         {
-            SceneTransitionManager.Instance.LoadScene(EScene.MainMenu);
-            // Choice : next level - main menu
+            ShowEndGameUI();
         }
-        else
-        {
-            SceneTransitionManager.Instance.ReloadCurrentScene();
-        }
-        
     }
 
+    private void GameManager_OnBossBattle(object sender, System.EventArgs e)
+    {
+        ShowBossBattleUI();
+        HidePlatformerUI();
+    }
+    
     private void GameManager_OnPauseGame(object sender, System.EventArgs e)
     {
         if (GameMode_Platformer.Instance.IsGamePaused)
@@ -65,23 +68,44 @@ public class PlatformerCanvas : Singleton<PlatformerCanvas>
      *
      */
 
-    public void ShowPlatformerUI()
+    private void ShowPlatformerUI()
     {
         _platformerUI.Show();
     }
 
-    public void HidePuzzleUI()
+    private void HidePlatformerUI()
     {
         _platformerUI.Hide();
     }
     
-    public void ShowPauseGameUI()
+    private void ShowPauseGameUI()
     {
         _pauseGameUI.Show();
     }
 
-    public void HidePauseGameUI()
+    private void HidePauseGameUI()
     {
         _pauseGameUI.Hide();
     }
+    
+    private void ShowBossBattleUI()
+    {
+        _bossBattleUI.Show();
+    }
+
+    private void HideBossBattleUI()
+    {
+        _bossBattleUI.Hide();
+    }
+    
+    private void ShowEndGameUI()
+    {
+        _endGameUI.Show();
+    }
+
+    private void HideEndGameUI()
+    {
+        _endGameUI.Hide();
+    }
+    
 }

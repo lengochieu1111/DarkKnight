@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using HIEU_NL.DesignPatterns.Singleton;
 using HIEU_NL.Platformer.Script.Entity;
 using HIEU_NL.Platformer.Script.Entity.Enemy;
+using HIEU_NL.Platformer.Script.Entity.Enemy.Boss;
 using HIEU_NL.Platformer.Script.Entity.Player;
 using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.Map;
@@ -23,6 +24,7 @@ namespace HIEU_NL.Platformer.Script.Game
     {
         public event EventHandler OnChangedState;
         public event EventHandler OnPauseGame;
+        public event EventHandler OnBossBattle;
         
         private enum State
         {
@@ -57,6 +59,7 @@ namespace HIEU_NL.Platformer.Script.Game
             
             //##
             BaseEnemy.OnAnyDeadEnemy += BaseEnemy_OnAnyDeadEnemy;
+            Player_Platformer.OnHealthChange += Player_OnOnHealthChange;
         }
 
         protected override void Start()
@@ -85,6 +88,7 @@ namespace HIEU_NL.Platformer.Script.Game
             {
                 foreach (var enemy in _enemyList)
                 {
+                    if (enemy is BaseBoss) continue;
                     enemy.ITakeDamage(new HitData(null, Vector3.zero, enemy.Health, false));
                 }
             }
@@ -122,27 +126,28 @@ namespace HIEU_NL.Platformer.Script.Game
         private void BaseEnemy_OnAnyDeadEnemy(object sender, EventArgs e)
         {
             if (_enemyList.IsNullOrEmpty()) return;
-            bool hasEnemyAlive = _enemyList.Any(enemy => !enemy.IsDead);
-            if (!hasEnemyAlive)
+            bool hasBotAlive = _enemyList.Any(enemy => !enemy.IsDead && enemy is not BaseBoss);
+            bool hasBossAlive = _enemyList.Any(enemy => !enemy.IsDead && enemy is BaseBoss);
+
+            if (!hasBotAlive)
             {
-                IsGameWon = true;
-                _state = State.GameOver;
-
-                int currentSelectedLevel = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex;
-                int CurrentLevel = FirebaseManager.Instance.CurrentUser.CurrentMaxLevelIndex;
-
-                if (currentSelectedLevel.Equals(CurrentLevel) && currentSelectedLevel < _mapDataListSO.MapAssetList.Count - 1)
+                if (hasBossAlive)
                 {
-                    FirebaseManager.Instance.UpgradeLevel(currentSelectedLevel + 1);
-                    FirebaseManager.Instance.UseLevel(currentSelectedLevel + 1);
-
+                    HandleBossBattle();
                 }
-                else if (!currentSelectedLevel.Equals(CurrentLevel))
+                else
                 {
-                    FirebaseManager.Instance.UseLevel(currentSelectedLevel + 1);
+                    HandleGameWin();
                 }
-
-                OnChangedState?.Invoke(this, EventArgs.Empty);
+            }
+            
+        }
+        
+        private void Player_OnOnHealthChange(object sender, float e)
+        {
+            if (e <= 0)
+            {
+                HandleGameLoss();
             }
         }
 
@@ -167,6 +172,7 @@ namespace HIEU_NL.Platformer.Script.Game
             
             Player = playerPrefab as Player_Platformer;
 
+            //##
             _followPlayerCamera.Follow = Player.transform;
             
             //##
@@ -185,7 +191,7 @@ namespace HIEU_NL.Platformer.Script.Game
                     Debug.LogWarning($"{mapHouse.MapHouseType} : Map Placement Point List is null or empty!");
                     continue;
                 }
-
+                
                 List<PrefabType_Platformer> botTypeList = new();
                 foreach (PrefabAsset_Platformer prefabAsset in _prefabAssetListSO.PoolPrefabAssetList)
                 {
@@ -230,6 +236,11 @@ namespace HIEU_NL.Platformer.Script.Game
             OnChangedState?.Invoke(this, EventArgs.Empty);
         }
 
+        private void PlayerAppearInBossRoom()
+        {
+            Player.transform.position = Map.PlayerSpawnPointInBossRoomTransform.position;
+        }
+
         public void TogglePauseGame()
         {
             IsGamePaused = !IsGamePaused;
@@ -245,7 +256,45 @@ namespace HIEU_NL.Platformer.Script.Game
 
             OnPauseGame?.Invoke(this, EventArgs.Empty);
         }
+
+
+        private void HandleBossBattle()
+        {
+            PlayerAppearInBossRoom();
+            OnBossBattle?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void HandleGameWin()
+        {
+            IsGameWon = true;
+            _state = State.GameOver;
+
+            int currentSelectedLevel = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex;
+            int currentLevel = FirebaseManager.Instance.CurrentUser.CurrentMaxLevelIndex;
+
+            if (currentSelectedLevel.Equals(currentLevel) && currentSelectedLevel < _mapDataListSO.MapAssetList.Count - 1)
+            {
+                FirebaseManager.Instance.UpgradeLevel(currentSelectedLevel + 1);
+                FirebaseManager.Instance.UseLevel(currentSelectedLevel + 1);
+
+            }
+            else if (!currentSelectedLevel.Equals(currentLevel))
+            {
+                FirebaseManager.Instance.UseLevel(currentSelectedLevel + 1);
+            }
+            
+            OnChangedState?.Invoke(this, EventArgs.Empty);
+
+        }
+
+        private void HandleGameLoss()
+        {
+            IsGameWon = false;
+            _state = State.GameOver;
+            OnChangedState?.Invoke(this, EventArgs.Empty);
+        }
         
+
         #endregion
 
         

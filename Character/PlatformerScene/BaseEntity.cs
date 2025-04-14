@@ -233,6 +233,10 @@ namespace HIEU_NL.Platformer.Script.Entity
                 
                 OnDead?.Invoke(this, EventArgs.Empty);
             }
+            else
+            {
+                HandlePain();
+            }
 
             return true;
         }
@@ -251,6 +255,11 @@ namespace HIEU_NL.Platformer.Script.Entity
         #endregion
 
         protected virtual void HandleDead()
+        {
+            
+        }
+
+        protected virtual void HandlePain()
         {
             
         }

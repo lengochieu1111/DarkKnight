@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using HIEU_NL.Platformer.Script.Map;
+using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using HIEU_NL.Puzzle.Script.Map;
 using NaughtyAttributes;
 using UnityEngine;
@@ -23,8 +24,7 @@ namespace HIEU_NL.SO.Map
         //## PLATFORMER
         [Header("PLATFORMER")]
         [BoxGroup("PLATFORMER")] public Map_Platformer MapPrefab_Platformer;
-        // [BoxGroup("PLATFORMER")] public int MaxHealthMedicienRate;
-        // [BoxGroup("PLATFORMER")] public int MaxEnergyMedicien;
+        [BoxGroup("PLATFORMER")] public PrefabType_Platformer BossType;
 
         //## INFORMATION
         [Header("INFORMATION")]

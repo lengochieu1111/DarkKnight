@@ -3,9 +3,9 @@ using System.Threading;
 using UnityEngine;
 using static HIEU_NL.Utilities.ParameterExtensions.Animation;
 
-namespace HIEU_NL.Platformer.Script.Entity.Enemy.Beetle
+namespace HIEU_NL.Platformer.Script.Entity.Enemy.Bringer
 {
-    public class Beetle_State
+    public class Bringer_State
     {
         /// <summary>
         /// IDLE STATE
@@ -20,7 +20,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Beetle
             {
                 base.OnEnter();
     
-                animator.CrossFadeInFixedTime(ANIM_HASH_Fly, transitionAnimDuration);
+                animator.CrossFadeInFixedTime(ANIM_HASH_Idle, transitionAnimDuration);
     
                 _idleCoroutine = owner.StartCoroutine(Idle_Coroutine());
     
@@ -66,7 +66,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Beetle
                 _patrolSpeed = 0f;
                 _patrolDirection = owner.IsFlippingLeft ? Vector2.left : Vector2.right;
     
-                animator.CrossFadeInFixedTime(ANIM_HASH_Fly, transitionAnimDuration);
+                animator.CrossFadeInFixedTime(ANIM_HASH_Walk, transitionAnimDuration);
     
             }
     
@@ -105,7 +105,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Beetle
         /// </summary>
         public class ChaseState : BaseEnemyState.ChaseState
         {
-            private Beetle _beetle;
+            private Bringer _bringer;
             private Vector2 _chaseDirection;
             private float _chaseSpeed;
             
@@ -118,9 +118,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Beetle
                 base.OnEnter();
                 
                 _chaseSpeed = 0f;
-                _beetle = owner as Beetle;
+                _bringer = owner as Bringer;
                 
-                animator.CrossFadeInFixedTime(ANIM_HASH_Fly, transitionAnimDuration);
+                animator.CrossFadeInFixedTime(ANIM_HASH_Walk, transitionAnimDuration);
             }
     
             public override void Update()
@@ -217,7 +217,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Beetle
                 blendAnimCoefficient = 0.8f;
 
                 _animHash = ANIM_HASH_Pain;
-    
                 animator.CrossFadeInFixedTime(_animHash, transitionAnimDuration);
     
                 _painCoroutine = owner.StartCoroutine(Pain_Coroutine());

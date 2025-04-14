@@ -2,8 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using HIEU_NL.Platformer.Script.Entity.Player;
-using HIEU_NL.Platformer.Script.Game;
-using HIEU_NL.Platformer.Script.Interface;
 using NaughtyAttributes;
 using UnityEngine;
 

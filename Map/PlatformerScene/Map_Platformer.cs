@@ -9,6 +9,7 @@ namespace HIEU_NL.Platformer.Script.Map
     public class Map_Platformer : RyoMonoBehaviour
     {
         [field: SerializeField] public Transform StartingPlayerPointTransform { get; private set; }
+        [field: SerializeField] public Transform PlayerSpawnPointInBossRoomTransform { get; private set; }
         [field: SerializeField, ReadOnly] public List<MapHouse_Platformer> MapHouseList;
 
         #region LoadMapHouse
