@@ -145,10 +145,10 @@ namespace HIEU_NL.Platformer.Script.Game
         
         private void Player_OnOnHealthChange(object sender, float e)
         {
-            if (e <= 0)
+            /*if (e <= 0)
             {
                 HandleGameLoss();
-            }
+            }*/
         }
 
         #endregion

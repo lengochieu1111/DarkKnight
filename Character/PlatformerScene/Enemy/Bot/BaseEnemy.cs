@@ -72,7 +72,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         
         
         //## SPAWM ITEM
-        [SerializeField, BoxGroup("SPAWM ITEM")] protected SpawnItemData spawnItemData;
+        [SerializeField, BoxGroup("SPAWN ITEM")] protected SpawnItemData spawnItemData;
 
         #region UNITY CORE
 
@@ -521,8 +521,11 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         public override bool ITakeDamage(HitData hitData)
         {
             bool result = base.ITakeDamage(hitData);
-            
-            healthBar?.Update_Bar(GetHealthPercentage());
+
+            if (healthBar != null)
+            {
+                healthBar?.Update_Bar(GetHealthPercentage());
+            }
 
             if (!result) return false;
 

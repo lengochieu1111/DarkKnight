@@ -28,8 +28,11 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Bringer
     
             public override void OnExit()
             {
-                owner.StopCoroutine(_idleCoroutine);
-                _idleCoroutine = null;
+                if (_idleCoroutine != null)
+                {
+                    owner.StopCoroutine(_idleCoroutine);
+                    _idleCoroutine = null;
+                }
                 
                 base.OnExit();
             }

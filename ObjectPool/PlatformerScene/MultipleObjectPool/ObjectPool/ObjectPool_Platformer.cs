@@ -189,7 +189,7 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
         {
             if (Input.GetKeyDown(KeyCode.S))
             {
-                Prefab_Platformer poolPrefab = GetPoolObject(PrefabType_Platformer.BOSS_Bringer, transform.position,
+                Prefab_Platformer poolPrefab = GetPoolObject(PrefabType_Platformer.BOSS_Viking, transform.position,
                         Quaternion.identity);
                 poolPrefab.Activate();
             }

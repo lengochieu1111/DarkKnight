@@ -227,7 +227,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
             ResetAttack();
 
-            _weaponIndex = FirebaseManager.Instance.CurrentUser.CurrentWeaponIndex;
+            // _weaponIndex = FirebaseManager.Instance.CurrentUser.CurrentWeaponIndex;
+            _weaponIndex = 1;
             _verticalVelocity = Physics2D.gravity.y;
         }
 
@@ -1235,7 +1236,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         private void PlayAnimation_Landing()
         {
-            PlayerAnimation(ANIM_HASH_Landing);
+            PlayerAnimation(ANIM_HASH_JumpEnd);
         }
 
         private void PlayAnimation_Attack()
