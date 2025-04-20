@@ -1,4 +1,5 @@
 using HIEU_NL.Platformer.Script.Entity.Enemy.Boss;
+using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using NaughtyAttributes;
 using Unity.Cinemachine;
