@@ -3,9 +3,9 @@ using System.Threading;
 using UnityEngine;
 using static HIEU_NL.Utilities.ParameterExtensions.Animation;
 
-namespace HIEU_NL.Platformer.Script.Entity.Enemy.Bringer
+namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
 {
-    public class Bringer_State
+    public class Viking_State
     {
         /// <summary>
         /// IDLE STATE
@@ -69,7 +69,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Bringer
                 _patrolSpeed = 0f;
                 _patrolDirection = owner.IsFlippingLeft ? Vector2.left : Vector2.right;
     
-                animator.CrossFadeInFixedTime(ANIM_HASH_Walk, transitionAnimDuration);
+                animator.CrossFadeInFixedTime(ANIM_HASH_Run, transitionAnimDuration);
     
             }
     
@@ -108,7 +108,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Bringer
         /// </summary>
         public class ChaseState : BaseEnemyState.ChaseState
         {
-            private Bringer _bringer;
+            private Viking _viking;
             private Vector2 _chaseDirection;
             private float _chaseSpeed;
             
@@ -121,9 +121,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Bringer
                 base.OnEnter();
                 
                 _chaseSpeed = 0f;
-                _bringer = owner as Bringer;
+                _viking = owner as Viking;
                 
-                animator.CrossFadeInFixedTime(ANIM_HASH_Walk, transitionAnimDuration);
+                animator.CrossFadeInFixedTime(ANIM_HASH_Run, transitionAnimDuration);
             }
     
             public override void Update()

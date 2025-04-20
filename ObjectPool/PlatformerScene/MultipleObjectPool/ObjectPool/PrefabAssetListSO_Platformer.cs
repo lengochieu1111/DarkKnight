@@ -73,7 +73,7 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
         
         //## Boss
         BOSS_Bringer,
-        BOSS_Women__,
+        BOSS_Viking,
         BOSS_Warrior,
         BOSS_Axe__,
         

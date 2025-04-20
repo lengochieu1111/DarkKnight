@@ -128,6 +128,15 @@ namespace HIEU_NL.Utilities
                 ____OTHER____,
                 Attack_1,
                 Attack_2,
+                Attack_3,
+                Attack_4,
+                Attack_5,
+                
+                Attack_Special_1,
+                Attack_Special_2,
+                Attack_Special_3,
+                Attack_Special_4,
+                Attack_Special_5,
                 
             }
             
@@ -151,6 +160,13 @@ namespace HIEU_NL.Utilities
                 //#
                 { AnimationType.Attack_1, Animator.StringToHash("Attack_1") },
                 { AnimationType.Attack_2, Animator.StringToHash("Attack_2") },
+                { AnimationType.Attack_3, Animator.StringToHash("Attack_3") },
+                { AnimationType.Attack_4, Animator.StringToHash("Attack_4") },
+                
+                { AnimationType.Attack_Special_1, Animator.StringToHash("Attack_Special_1") },
+                { AnimationType.Attack_Special_2, Animator.StringToHash("Attack_Special_2") },
+                { AnimationType.Attack_Special_3, Animator.StringToHash("Attack_Special_3") },
+                { AnimationType.Attack_Special_4, Animator.StringToHash("Attack_Special_4") },
                 
             };
 
