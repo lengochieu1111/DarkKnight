@@ -7,7 +7,6 @@ using HIEU_NL.Platformer.Script.Entity;
 using HIEU_NL.Platformer.Script.Entity.Enemy;
 using HIEU_NL.Platformer.Script.Entity.Enemy.Boss;
 using HIEU_NL.Platformer.Script.Entity.Player;
-using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.Map;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using HIEU_NL.SO.Character;
@@ -22,6 +21,7 @@ namespace HIEU_NL.Platformer.Script.Game
 {
     public class GameMode_Platformer : Singleton<GameMode_Platformer>
     {
+        public static event EventHandler<int> OnSetupSuccess;
         public event EventHandler OnChangedState;
         public event EventHandler OnPauseGame;
         public event EventHandler OnBossBattle;
@@ -38,6 +38,7 @@ namespace HIEU_NL.Platformer.Script.Game
         [SerializeField] private CharacterDataListSO _characterDataListSO;
         [SerializeField] private PrefabAssetListSO_Platformer _prefabAssetListSO;
         [SerializeField] private CinemachineCamera _followPlayerCamera;
+        [SerializeField] private CinemachineConfiner2D _cinemachineConfiner;
 
         [SerializeField, ReadOnly] public Player_Platformer Player;
         [SerializeField, ReadOnly] public Map_Platformer Map;
@@ -52,6 +53,7 @@ namespace HIEU_NL.Platformer.Script.Game
         [ShowNonSerializedField] private int _currentCharacterIndex;
 
         private List<BaseEnemy> _enemyList = new();
+        public List<BaseEnemy> EnemyList => _enemyList;
 
         protected override void OnEnable()
         {
@@ -60,38 +62,18 @@ namespace HIEU_NL.Platformer.Script.Game
             //##
             BaseEnemy.OnAnyDeadEnemy += BaseEnemy_OnAnyDeadEnemy;
             Player_Platformer.OnHealthChange += Player_OnOnHealthChange;
+            PlatformerCanvas.Instance.OnBossComing += PlatformerCanvas_OnBossComing;
+            Player_Platformer.OnPlayerPause += Player_OnPlayerPause;
         }
+
 
         protected override void Start()
         {
             base.Start();
             
             //##
-            /*SpawnMap();
-            SpawnEntities();*/
-            
-            UT_Spawn().Forget();
-            
-        }
-
-        private async UniTask UT_Spawn()
-        {
-            await UniTask.WaitForSeconds(2f);
-            
             SpawnMap();
             SpawnEntities();
-        }
-
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.K))
-            {
-                foreach (var enemy in _enemyList)
-                {
-                    if (enemy is BaseBoss) continue;
-                    enemy.ITakeDamage(new HitData(null, Vector3.zero, enemy.Health, false));
-                }
-            }
         }
 
         protected override void OnDisable()
@@ -99,7 +81,9 @@ namespace HIEU_NL.Platformer.Script.Game
             base.OnDisable();
             
             //##
-            BaseEnemy.OnAnyDeadEnemy -= BaseEnemy_OnAnyDeadEnemy;
+            /*BaseEnemy.OnAnyDeadEnemy -= BaseEnemy_OnAnyDeadEnemy;
+            Player_Platformer.OnHealthChange -= Player_OnOnHealthChange;
+            PlatformerCanvas.Instance.OnBossComing -= PlatformerCanvas_OnBossComing;*/
         }
 
         #region RESET
@@ -113,19 +97,34 @@ namespace HIEU_NL.Platformer.Script.Game
             IsGamePaused = false;
             _state = State.WaitingToStart;
             
-            // _currentLevelIndex = FirebaseManager.Instance.CurrentUser.CurrentMaxLevelIndex;
-            // _currentCharacterIndex = FirebaseManager.Instance.CurrentUser.CurrentCharacterIndex;
-            _currentLevelIndex = 0;
-            _currentCharacterIndex = 0;
+            _currentLevelIndex = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex;
+            _currentCharacterIndex = FirebaseManager.Instance.CurrentUser.CurrentCharacterIndex;
+
         }
 
         #endregion
 
         #region EVENT ACTION
+        
+        private void Player_OnPlayerPause(object sender, EventArgs e)
+        {
+            TogglePauseGame();
+        }
+        
+        private void PlatformerCanvas_OnBossComing(object sender, EventArgs e)
+        {
+            PlayerAppearInBossRoom();
+        }
 
         private void BaseEnemy_OnAnyDeadEnemy(object sender, EventArgs e)
         {
             if (_enemyList.IsNullOrEmpty()) return;
+
+            if (sender is BaseBoss)
+            {
+                FirebaseManager.Instance.UpdateMissionAmount(3, 1);
+            }
+            
             bool hasBotAlive = _enemyList.Any(enemy => !enemy.IsDead && enemy is not BaseBoss);
             bool hasBossAlive = _enemyList.Any(enemy => !enemy.IsDead && enemy is BaseBoss);
 
@@ -145,11 +144,12 @@ namespace HIEU_NL.Platformer.Script.Game
         
         private void Player_OnOnHealthChange(object sender, float e)
         {
-            /*if (e <= 0)
+            if (e <= 0)
             {
                 HandleGameLoss();
-            }*/
+            }
         }
+        
 
         #endregion
 
@@ -171,9 +171,13 @@ namespace HIEU_NL.Platformer.Script.Game
             playerPrefab.Activate();
             
             Player = playerPrefab as Player_Platformer;
+            Player.SetHealth(_mapDataListSO.MapAssetList[_currentLevelIndex].PlayerHealth);
 
             //##
             _followPlayerCamera.Follow = Player.transform;
+            _cinemachineConfiner.enabled = true;
+            _cinemachineConfiner.BoundingShape2D = Map.CameraColliderBouds;
+            _cinemachineConfiner.InvalidateBoundingShapeCache();
             
             //##
             _enemyList.Clear();
@@ -232,12 +236,19 @@ namespace HIEU_NL.Platformer.Script.Game
             }
             
             //## Start Game
+            OnSetupSuccess?.Invoke(this, _enemyList.Count);
+                
             _state = State.GamePlaying;
             OnChangedState?.Invoke(this, EventArgs.Empty);
         }
 
         private void PlayerAppearInBossRoom()
         {
+            //##
+            _cinemachineConfiner.enabled = false;
+            _followPlayerCamera.Follow = Map.PlayerSpawnPointInBossRoomTransform;
+            
+            //##
             Player.transform.position = Map.PlayerSpawnPointInBossRoomTransform.position;
         }
 
@@ -260,7 +271,6 @@ namespace HIEU_NL.Platformer.Script.Game
 
         private void HandleBossBattle()
         {
-            PlayerAppearInBossRoom();
             OnBossBattle?.Invoke(this, EventArgs.Empty);
         }
 
@@ -283,17 +293,23 @@ namespace HIEU_NL.Platformer.Script.Game
                 FirebaseManager.Instance.UseLevel(currentSelectedLevel + 1);
             }
             
-            OnChangedState?.Invoke(this, EventArgs.Empty);
-
+            UT_GameOver().Forget();
         }
 
         private void HandleGameLoss()
         {
             IsGameWon = false;
             _state = State.GameOver;
+            
+            UT_GameOver().Forget();
+        }
+
+
+        private async UniTask UT_GameOver()
+        {
+            await UniTask.WaitForSeconds(2f);
             OnChangedState?.Invoke(this, EventArgs.Empty);
         }
-        
 
         #endregion
 

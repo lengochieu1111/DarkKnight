@@ -12,7 +12,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         {
             controller.SpawnSlash();
         }
-
+        
         public void AE_EndAttack()
         {
             controller.EndAttack();

@@ -89,12 +89,12 @@ public class LoginUI : RyoMonoBehaviour
 
     private void Achievements()
     {
-        Debug.Log("Achievements");
+        LoginCanvas.Instance.ShowAchivementUI();
     }
 
     private void Credits()
     {
-        Debug.Log("Credits");
+        LoginCanvas.Instance.ShowCreditUI();
     }
 
     private void QuitGame()

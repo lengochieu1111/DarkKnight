@@ -11,7 +11,6 @@ namespace HIEU_NL.ObjectPool.Profile
         [SerializeField] private Button _selectButton;
         [SerializeField] private Button _clearButton;
 
-        [SerializeField] private TextMeshProUGUI _rankingIndexText;
         [SerializeField] private Image _avatarImage;
         [SerializeField] private TextMeshProUGUI _nameText;
         [SerializeField] private TextMeshProUGUI _currentLevelIndexText;
@@ -49,11 +48,6 @@ namespace HIEU_NL.ObjectPool.Profile
             }
 
             //
-
-            if (_rankingIndexText == null)
-            {
-                _rankingIndexText = transform.Find("RankingIndexText")?.GetComponent<TextMeshProUGUI>();
-            }
 
             if (_avatarImage == null)
             {
@@ -97,9 +91,8 @@ namespace HIEU_NL.ObjectPool.Profile
             _user = user;
 
             //##
-            _rankingIndexText.text = rankingIndex.ToString();
             _nameText.text = user.Name;
-            _currentLevelIndexText.text = user.CurrentMaxLevelIndex.ToString();
+            _currentLevelIndexText.text = (user.CurrentMaxLevelIndex + 1).ToString();
 
         }
 

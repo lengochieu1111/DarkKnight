@@ -12,13 +12,13 @@ public class IntroCanvas : RyoMonoBehaviour
 
     private void FirebaseManager_OnGetDataCompleted(object sender, System.EventArgs e)
     {
-        if (FirebaseManager.Instance.CurrentUser != null)
+        if (string.IsNullOrEmpty(FirebaseManager.Instance.CurrentUser.Name))
         {
-            SceneTransitionManager.Instance.LoadScene(EScene.MainMenu);
+            SceneTransitionManager.Instance.LoadScene(EScene.Login);
         }
         else
         {
-            SceneTransitionManager.Instance.LoadScene(EScene.Login);
+            SceneTransitionManager.Instance.LoadScene(EScene.MainMenu);
         }
     }
 

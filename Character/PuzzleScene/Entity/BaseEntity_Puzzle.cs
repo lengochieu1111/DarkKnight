@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using HIEU_NL.Puzzle.Script.Map;
 using HIEU_NL.Puzzle.Script.ObjectPool.Multiple;
 using HIEU_NL.Utilities;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace HIEU_NL.Puzzle.Script.Entity
 {
@@ -21,7 +23,13 @@ namespace HIEU_NL.Puzzle.Script.Entity
 
         protected virtual void DestroySelf()
         {
-            gameObject.SetActive(false);
+            try
+            {
+                gameObject.SetActive(false);
+            }
+            catch (Exception e)
+            {
+            }
         }
 
         public virtual bool CanMoveInto()

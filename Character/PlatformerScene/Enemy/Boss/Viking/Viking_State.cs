@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Threading;
+using HIEU_NL.DesignPatterns.StateMachine;
 using HIEU_NL.Utilities;
 using HIEU_NL.Utilities.Move;
 using UnityEngine;
@@ -14,6 +15,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
         /// </summary>
         public class IdleState : BaseEnemyState.IdleState
         {
+            private Viking _viking;
+            private int _animHash;
             private Coroutine _idleCoroutine;
     
             public IdleState(BaseEnemy owner, Animator animator) : base(owner, animator) { }
@@ -22,7 +25,10 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
             {
                 base.OnEnter();
     
-                animator.CrossFadeInFixedTime(ANIM_HASH_Idle, transitionAnimDuration);
+                _viking = owner as Viking;
+                
+                _animHash = _viking.HasEnhanced ? ANIM_HASH_Idle_Enhanced : ANIM_HASH_Idle;
+                animator.CrossFadeInFixedTime(_animHash, transitionAnimDuration);
     
                 _idleCoroutine = owner.StartCoroutine(Idle_Coroutine());
     
@@ -54,6 +60,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
         /// </summary>
         public class PatrolState : BaseEnemyState.PatrolState
         {
+            private Viking _viking;
+            private int _animHash;
             private Vector2 _patrolDirection;
             private float _patrolSpeed;
     
@@ -71,7 +79,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
                 _patrolSpeed = 0f;
                 _patrolDirection = owner.IsFlippingLeft ? Vector2.left : Vector2.right;
     
-                animator.CrossFadeInFixedTime(ANIM_HASH_Run, transitionAnimDuration);
+                _viking = owner as Viking;
+                _animHash = _viking.HasEnhanced ? ANIM_HASH_Run_Enhanced : ANIM_HASH_Run;
+                animator.CrossFadeInFixedTime(_animHash, transitionAnimDuration);
     
             }
     
@@ -110,6 +120,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
         /// </summary>
         public class ChaseState : BaseEnemyState.ChaseState
         {
+            private Viking _viking;
+            private int _animHash;
             private Vector2 _chaseDirection;
             private float _chaseSpeed;
             
@@ -123,7 +135,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
                 
                 _chaseSpeed = 0f;
                 
-                animator.CrossFadeInFixedTime(ANIM_HASH_Run, transitionAnimDuration);
+                _viking = owner as Viking;
+                _animHash = _viking.HasEnhanced ? ANIM_HASH_Run_Enhanced : ANIM_HASH_Run;
+                animator.CrossFadeInFixedTime(_animHash, transitionAnimDuration);
             }
     
             public override void Update()
@@ -149,7 +163,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
             public override void OnExit()
             {
                 _cancellationTokenSource?.Cancel();
-                // _cancellationTokenSource?.Dispose();
+                _cancellationTokenSource?.Dispose();
                 
                 base.OnExit();
             }
@@ -170,10 +184,11 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
             private Viking _viking;
             private CurveMove _curveMove;
             private int _attackAnimHash;
-            private int _attackIndex;
+            private int _actualAttackIndex;
             private Coroutine _attackCoroutine;
             private bool _isPlayedJumpEndAnimation;
             private bool _isPlayedAttackAnimation;
+            public int ActualAttackIndex => _actualAttackIndex;
     
             public AttackState(BaseEnemy owner, Animator animator) : base(owner, animator) { }
     
@@ -187,16 +202,46 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
                 
                 if (owner.AttackIndex == 3 || owner.AttackIndex == 4)
                 {
-                    _attackIndex = Random.Range(3,5);
+                    _actualAttackIndex = Random.Range(3, 5);
+
+                    /*if (_actualAttackIndex == 4 &&
+                        Vector2.Distance(owner.MyTransform.position, owner.TargetTransform.position) <
+                        _viking.SpecialAttack_2_MinAttackDistance)
+                    {
+                        _actualAttackIndex = 3;
+                        
+                        if (_actualAttackIndex == 3 && !GameMode_Platformer.Instance.Player.IsGrounded)
+                        {
+                            _actualAttackIndex = Random.Range(0, 3);
+                        }
+                    }
+                    else if (_actualAttackIndex == 3 && !GameMode_Platformer.Instance.Player.IsGrounded)
+                    {
+                        _actualAttackIndex = 4;
+                        
+                        if (_actualAttackIndex == 4 &&
+                            Vector2.Distance(owner.MyTransform.position, owner.TargetTransform.position) <
+                            _viking.SpecialAttack_2_MinAttackDistance)
+                        {
+                            _actualAttackIndex = Random.Range(0, 3);
+                        }
+                    }
+                    else
+                    {
+                        _actualAttackIndex = Random.Range(0, 4);
+                    }*/
+                    
                 }
                 else
                 {
-                    _attackIndex = owner.AttackIndex;
+                    _actualAttackIndex = owner.AttackIndex;
                 }
+
     
-                if (_attackIndex == 3)
+                if (_actualAttackIndex == 3)
                 {
-                    animator.CrossFadeInFixedTime(ANIM_HASH_JumpStart, transitionAnimDuration);
+                    int jumpStartAnimHash = _viking.HasEnhanced ? ANIM_HASH_JumpStart_Enhanced : ANIM_HASH_JumpStart;
+                    animator.CrossFadeInFixedTime(jumpStartAnimHash, transitionAnimDuration);
 
                     Vector2 startPosition = owner.MyTransform.position;
                     float widthOffset = owner.IsFlippingLeft
@@ -228,14 +273,15 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
             {
                 base.Update();
 
-                if (_curveMove != null && _attackIndex == 3)
+                if (_curveMove != null && _actualAttackIndex == 3)
                 {
                     _curveMove?.Moving();
 
                     if (!_isPlayedJumpEndAnimation && _curveMove.GetProgressPercentage() > 0.5f)
                     {
                         _isPlayedJumpEndAnimation = true;
-                        animator.CrossFadeInFixedTime(ANIM_HASH_JumpEnd, transitionAnimDuration);
+                        int jumpEmdAnimHash = _viking.HasEnhanced ? ANIM_HASH_JumpEnd_Enhanced : ANIM_HASH_JumpEnd;
+                        animator.CrossFadeInFixedTime(jumpEmdAnimHash, transitionAnimDuration);
                     }
                     else if (!_isPlayedAttackAnimation && _curveMove.GetProgressPercentage() > 0.8f)
                     {
@@ -262,7 +308,27 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
 
             private void PlayAttackAnimation()
             {
-                _attackAnimHash = ALL_ANIM_HASH[owner.Stats.AttackDataArray[_attackIndex].AttackAnimType];
+                AnimationType animationType = AnimationType.Attack_1;
+                switch (_actualAttackIndex)
+                {
+                    case 0:
+                        animationType = _viking.HasEnhanced ? AnimationType.Attack_1_Enhanced : AnimationType.Attack_1;
+                        break;
+                    case 1:
+                        animationType = _viking.HasEnhanced ? AnimationType.Attack_2_Enhanced : AnimationType.Attack_2;
+                        break;
+                    case 2:
+                        animationType = _viking.HasEnhanced ? AnimationType.Attack_3_Enhanced : AnimationType.Attack_3;
+                        break;
+                    case 3:
+                        animationType = _viking.HasEnhanced ? AnimationType.Attack_Special_1_Enhanced : AnimationType.Attack_Special_1;
+                        break;
+                    case 4:
+                        animationType = _viking.HasEnhanced ? AnimationType.Attack_Special_2_Enhanced : AnimationType.Attack_Special_2;
+                        break;
+                }
+                
+                _attackAnimHash = ALL_ANIM_HASH[animationType];
                 animator.CrossFadeInFixedTime(_attackAnimHash, transitionAnimDuration);
                     
                 _attackCoroutine = owner.StartCoroutine(Attack_Coroutine());
@@ -284,6 +350,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
         /// </summary>
         public class PainState : BaseEnemyState.PainState
         {
+            private Viking _viking;
             private Coroutine _painCoroutine;
             private int _animHash;
 
@@ -295,7 +362,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
                 
                 blendAnimCoefficient = 0.8f;
 
-                _animHash = ANIM_HASH_Pain;
+                _viking = owner as Viking;
+                _animHash = _viking.HasEnhanced ? ANIM_HASH_Pain_Enhanced : ANIM_HASH_Pain;
                 animator.CrossFadeInFixedTime(_animHash, transitionAnimDuration);
     
                 _painCoroutine = owner.StartCoroutine(Pain_Coroutine());
@@ -322,10 +390,102 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
         }
         
         /// <summary>
+        /// ENHANCED STATE
+        /// </summary>
+        public class EnhancedState : BaseState<Viking>
+        {
+            protected float blendAnimCoefficient = 0.8f;
+            protected float transitionAnimDuration = 0.2f;
+            private Coroutine _enhancedCoroutine;
+            private int _animHash;
+    
+            public EnhancedState(Viking owner, Animator animator) : base(owner, animator) { }
+            
+            public override void OnEnter()
+            {
+                owner.Begin_EnhancedState();
+                
+                blendAnimCoefficient = 0.8f;
+
+                _animHash = ANIM_HASH_Enhanced;
+                animator.CrossFadeInFixedTime(_animHash, transitionAnimDuration);
+    
+                _enhancedCoroutine = owner.StartCoroutine(Enhanced_Coroutine());
+            }
+            
+    
+            public override void OnExit()
+            {
+                owner.StopCoroutine(_enhancedCoroutine);
+                _enhancedCoroutine = null;
+                
+                owner.Finish_EnhancedState();
+            }
+            
+            //#
+            
+            private IEnumerator Enhanced_Coroutine()
+            {
+                yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).shortNameHash.Equals(_animHash));
+                float painTime = animator.GetCurrentAnimatorStateInfo(0).length * blendAnimCoefficient;
+                yield return new WaitForSeconds(painTime);
+                owner.Finish_EnhancedState();
+            }
+            
+        }
+        
+        /// <summary>
+        /// DEFENSE STATE
+        /// </summary>
+        /*public class DefenseState : BaseState<Viking>
+        {
+            protected float blendAnimCoefficient = 0.8f;
+            protected float transitionAnimDuration = 0.2f;
+            private Coroutine _defenseCoroutine;
+            private int _animHash;
+    
+            public DefenseState(Viking owner, Animator animator) : base(owner, animator) { }
+            
+            public override void OnEnter()
+            {
+                owner.Begin_DefenseState();
+                
+                blendAnimCoefficient = 0.8f;
+
+                _animHash = ANIM_HASH_Defense;
+                animator.CrossFadeInFixedTime(_animHash, 0);
+    
+                _defenseCoroutine = owner.StartCoroutine(Defense_Coroutine());
+            }
+            
+    
+            public override void OnExit()
+            {
+                owner.StopCoroutine(_defenseCoroutine);
+                _defenseCoroutine = null;
+                
+                owner.Finish_DefenseState();
+            }
+            
+            //#
+            
+            private IEnumerator Defense_Coroutine()
+            {
+                yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).shortNameHash.Equals(_animHash));
+                float painTime = animator.GetCurrentAnimatorStateInfo(0).length * blendAnimCoefficient;
+                yield return new WaitForSeconds(painTime);
+                owner.Finish_DefenseState();
+            }
+            
+        }*/
+        
+        /// <summary>
         /// DIE STATE
         /// </summary>
         public class DeadState : BaseEnemyState.DeadState 
         {
+            private Viking _viking;
+            private int _animHash;
             private Coroutine _deadCoroutine;
             
             public DeadState(BaseEnemy owner, Animator animator) : base(owner, animator) { }
@@ -334,7 +494,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
             {
                 owner.Begin_DeadState();
 
-                animator.CrossFadeInFixedTime(ANIM_HASH_Dead, transitionAnimDuration);
+                _viking = owner as Viking;
+                _animHash = _viking.HasEnhanced ? ANIM_HASH_Dead_Enhanced : ANIM_HASH_Dead;
+                animator.CrossFadeInFixedTime(_animHash, transitionAnimDuration);
 
                 _deadCoroutine = owner.StartCoroutine(Dead_Coroutine());
                 
@@ -360,176 +522,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Viking
 
         }
         
-        /* using UnityEngine;
-        using System.Collections;
-
-        public class ForwardArcMovement2D : MonoBehaviour
-        {
-            [Header("Movement Settings")]
-            [Range(0.1f, 20f)]
-            public float moveDistance = 5f;     // Khoảng cách di chuyển
-            [Range(0.1f, 10f)]
-            public float arcHeight = 2f;        // Chiều cao của vòng cung
-            [Range(0.1f, 10f)]
-            public float movementDuration = 1f; // Thời gian di chuyển
-
-            [Header("Rotation Settings")]
-            public bool rotateTowardsMoveDirection = true;
-            public float rotationSpeed = 10f;
-
-            [Header("Debug")]
-            public bool visualizeArc = true;
-            public int arcResolution = 30;
-            public Color arcColor = Color.yellow;
-
-            private Vector2 _startPosition;
-            private Vector2 _endPosition;
-            private bool _isMoving = false;
-            private Vector2 _movementDirection;
-
-            // Bắt đầu di chuyển theo vòng cung theo hướng forward hiện tại
-            public void StartArcMovementInForwardDirection()
-            {
-                if (!_isMoving)
-                {
-                    StopAllCoroutines();
-
-                    // Lấy vị trí hiện tại làm điểm bắt đầu
-                    _startPosition = transform.position;
-
-                    // Lấy hướng forward của đối tượng
-                    _movementDirection = transform.right; // Trong Unity 2D, trục x thường là forward
-
-                    // Tính toán điểm đích dựa trên hướng forward và khoảng cách di chuyển
-                    _endPosition = _startPosition + (_movementDirection * moveDistance);
-
-                    StartCoroutine(MoveInArc());
-                }
-            }
-
-            // Di chuyển đối tượng theo đường cong
-            private IEnumerator MoveInArc()
-            {
-                _isMoving = true;
-                float elapsedTime = 0f;
-
-                while (elapsedTime < movementDuration)
-                {
-                    float t = elapsedTime / movementDuration;
-
-                    // Tính toán vị trí trên đường cong
-                    Vector2 arcPosition = CalculateArcPoint(_startPosition, _endPosition, arcHeight, t);
-                    transform.position = arcPosition;
-
-                    // Quay đối tượng theo hướng di chuyển nếu được bật
-                    if (rotateTowardsMoveDirection && t > 0)
-                    {
-                        // Tính vector hướng di chuyển tại thời điểm hiện tại trên đường cong
-                        Vector2 tangent = CalculateArcTangent(_startPosition, _endPosition, arcHeight, t);
-                        RotateTowardsDirection(tangent);
-                    }
-
-                    elapsedTime += Time.deltaTime;
-                    yield return null;
-                }
-
-                // Đảm bảo đối tượng đến đúng vị trí cuối
-                transform.position = _endPosition;
-                _isMoving = false;
-            }
-
-            // Tính toán vị trí trên đường cong dựa trên tham số t (0-1)
-            public Vector2 CalculateArcPoint(Vector2 start, Vector2 end, float height, float t)
-            {
-                // Điểm giữa của đường thẳng từ start đến end
-                Vector2 midPoint = Vector2.Lerp(start, end, 0.5f);
-
-                // Tính toán vector hướng lên (trong không gian 2D)
-                Vector2 direction = (end - start).normalized;
-                Vector2 perpendicular = new Vector2(-direction.y, direction.x); // Vector vuông góc với hướng di chuyển
-
-                // Điểm cao nhất của vòng cung
-                Vector2 arcMidPoint = midPoint + perpendicular * height;
-
-                // Sử dụng Quadratic Bezier Curve
-                float oneMinusT = 1f - t;
-                return oneMinusT * oneMinusT * start + 2f * oneMinusT * t * arcMidPoint + t * t * end;
-            }
-
-            // Tính vector tiếp tuyến tại một điểm trên đường cong
-            public Vector2 CalculateArcTangent(Vector2 start, Vector2 end, float height, float t)
-            {
-                // Điểm giữa của đường thẳng từ start đến end
-                Vector2 midPoint = Vector2.Lerp(start, end, 0.5f);
-
-                // Tính toán vector hướng lên (trong không gian 2D)
-                Vector2 direction = (end - start).normalized;
-                Vector2 perpendicular = new Vector2(-direction.y, direction.x);
-
-                // Điểm cao nhất của vòng cung
-                Vector2 arcMidPoint = midPoint + perpendicular * height;
-
-                // Đạo hàm của đường cong Bezier bậc 2
-                // P'(t) = 2(1-t)(P1-P0) + 2t(P2-P1)
-                Vector2 tangent = 2 * (1 - t) * (arcMidPoint - start) + 2 * t * (end - arcMidPoint);
-                return tangent.normalized;
-            }
-
-            // Quay đối tượng theo hướng di chuyển
-            private void RotateTowardsDirection(Vector2 direction)
-            {
-                if (direction.sqrMagnitude < 0.001f)
-                    return;
-
-                // Tính góc quay dựa trên vector hướng
-                float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-
-                // Quay đối tượng đến góc này
-                Quaternion targetRotation = Quaternion.Euler(0, 0, angle);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-            }
-
-            // Cho phép kích hoạt di chuyển từ bên ngoài
-            public void Jump()
-            {
-                StartArcMovementInForwardDirection();
-            }
-
-            // Vẽ đường cong trong Scene View để dễ dàng điều chỉnh
-            private void OnDrawGizmos()
-            {
-                if (!visualizeArc || !isActiveAndEnabled)
-                    return;
-
-                Vector2 start = transform.position;
-                Vector2 direction = transform.right; // Trong Unity 2D, trục x thường là forward
-                Vector2 end = start + (direction * moveDistance);
-
-                Gizmos.color = arcColor;
-
-                // Vẽ đường thẳng nối điểm đầu và cuối
-                Gizmos.DrawLine(start, end);
-
-                // Vẽ đường cong bằng cách nối các điểm
-                Vector2 previousPoint = start;
-
-                for (int i = 1; i <= arcResolution; i++)
-                {
-                    float t = i / (float)arcResolution;
-                    Vector2 point = CalculateArcPoint(start, end, arcHeight, t);
-                    Gizmos.DrawLine(previousPoint, point);
-                    previousPoint = point;
-
-                    // Vẽ vector hướng di chuyển tại một số điểm
-                    if (i % 5 == 0)
-                    {
-                        Vector2 tangent = CalculateArcTangent(start, end, arcHeight, t);
-                        Gizmos.DrawRay(point, tangent * 0.5f);
-                    }
-                }
-            }
-        }*/
-     
     }
     
 }

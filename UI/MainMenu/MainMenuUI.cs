@@ -12,6 +12,7 @@ public class MainMenuUI : RyoMonoBehaviour
     [SerializeField] private Button _selectMapButton;
     [SerializeField] private Button _shopButton;
     [SerializeField] private Button _optionsButton;
+    [SerializeField] private Button _missionButton;
     [SerializeField] private Button _logoutButton;
 
     [SerializeField] private TextMeshProUGUI _userNameText;
@@ -38,6 +39,11 @@ public class MainMenuUI : RyoMonoBehaviour
         _optionsButton.onClick.AddListener(() =>
         {
             Options();
+        });
+        
+        _missionButton.onClick.AddListener(() =>
+        {
+            Mission();
         });
 
         _logoutButton.onClick.AddListener(() =>
@@ -94,14 +100,23 @@ public class MainMenuUI : RyoMonoBehaviour
 
     private void StartGame()
     {
-        if (FirebaseManager.Instance.CurrentUser.PuzzleUnlocked)
+        if (FirebaseManager.Instance.CurrentUser.CurrentLevelIndex <
+            FirebaseManager.Instance.CurrentUser.CurrentMaxLevelIndex)
         {
             SceneTransitionManager.Instance.LoadScene(EScene.Platformer);
         }
         else
         {
-            SceneTransitionManager.Instance.LoadScene(EScene.Puzzle);
+            if (FirebaseManager.Instance.CurrentUser.PuzzleUnlocked)
+            {
+                SceneTransitionManager.Instance.LoadScene(EScene.Platformer);
+            }
+            else
+            {
+                SceneTransitionManager.Instance.LoadScene(EScene.Puzzle);
+            }
         }
+
     }
 
     private void SelectLevel()
@@ -117,6 +132,11 @@ public class MainMenuUI : RyoMonoBehaviour
     private void Options()
     {
         MainMenuCanvas.Instance.ShowOptionsUI();
+    }
+    
+    private void Mission()
+    {
+        MainMenuCanvas.Instance.ShowMissionUI();
     }
     
     private void LogoutButton()

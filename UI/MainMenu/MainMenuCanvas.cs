@@ -7,6 +7,7 @@ public class MainMenuCanvas : Singleton<MainMenuCanvas>
     [SerializeField] private OptionsUI_MainMenuCanvas _optionsUI;
     [SerializeField] private SelectMapUI_MainMenuCanvas _selectMapUI;
     [SerializeField] private ShopUI_MainMenuCanvas _shopUI;
+    [SerializeField] private MissionUI_MainMenuCanvas _missionUI;
 
 
     protected override void OnEnable()
@@ -18,6 +19,7 @@ public class MainMenuCanvas : Singleton<MainMenuCanvas>
         HideOptionsUI();
         HideSelectMapUI();
         HideShopUI();
+        HideMissionUI();
         
         //##
         MusicManager.Instance.PlayMusic_MainMenu();
@@ -63,6 +65,16 @@ public class MainMenuCanvas : Singleton<MainMenuCanvas>
     public void HideShopUI()
     {
         _shopUI.Hide();
+    }
+    
+    public void ShowMissionUI()
+    {
+        _missionUI.Show();
+    }
+    
+    public void HideMissionUI()
+    {
+        _missionUI.Hide();
     }
 
     #endregion

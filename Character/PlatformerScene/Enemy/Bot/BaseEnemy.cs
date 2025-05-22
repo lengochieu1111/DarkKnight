@@ -3,6 +3,8 @@ using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using HIEU_NL.Manager;
+using HIEU_NL.ObjectPool.Audio;
 using HIEU_NL.Platformer.Script.Game;
 using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
@@ -61,6 +63,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         [SerializeField, Foldout("Attack")] protected bool isAttacking;
         [SerializeField, Foldout("Attack")] protected bool isTracing;
         [SerializeField, Foldout("Attack")] protected int attackIndex;
+        [SerializeField, Foldout("Attack"), MinMaxSlider(3, 20)] private Vector2 _normalDamage = new Vector2(5, 5);
+
         public int AttackIndex => attackIndex;
         private List<HittableObject> _listHasBeenHit = new();
 
@@ -73,6 +77,13 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         
         //## SPAWM ITEM
         [SerializeField, BoxGroup("SPAWN ITEM")] protected SpawnItemData spawnItemData;
+        
+        //## AUDIO
+        [SerializeField, BoxGroup("AUDIO")] protected AudioSource footstepAudioSource;
+        [SerializeField, BoxGroup("AUDIO")] protected SoundType attack_1_SoundType = SoundType.NONE;
+        [SerializeField, BoxGroup("AUDIO")] protected SoundType attack_2_SoundType = SoundType.NONE;
+        [SerializeField, BoxGroup("AUDIO")] protected SoundType pain_SoundType = SoundType.NONE;
+        [SerializeField, BoxGroup("AUDIO")] protected SoundType dead_SoundType = SoundType.NONE;
 
         #region UNITY CORE
 
@@ -82,34 +93,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
 
                 //##
                 stateMachine = new StateMachine();
-
-                /*
-                idleState = new BaseEnemyState.IdleState(this, animator);
-                BaseEnemyState.IdleState golem1PatrolState = new BaseEnemyState.IdleState(this, animator);
-                BaseEnemyState.ChaseState chaseState = new BaseEnemyState.ChaseState(this, animator);
-                BaseEnemyState.AttackState attackState = new BaseEnemyState.AttackState(this, animator);
-                BaseEnemyState.PainState painState = new BaseEnemyState.PainState(this, animator);
-                BaseEnemyState.DeadState deadState = new BaseEnemyState.DeadState(this, animator);
-
-                SetupTransitionStates();
-
-                //## LOCAL FUNCTION
-                void SetupTransitionStates()
-                {
-                    AddTransition(_idleState, golem1PatrolState, new FuncPredicate(CanIdleToPatrol));
-                    AddTransition(golem1PatrolState, idleState, new FuncPredicate(CanPatrolToIdle));
-                    AddTransition(chaseState, golem1PatrolState, new FuncPredicate(CanChaseToPatrol));
-                    
-                    AddTransition(attackState, idleState, new FuncPredicate(CanAttackToIdle));
-                    AddTransition(attackState, golem1PatrolState, new FuncPredicate(CanAttackToPatrol));
-                    
-                    AddTransition(painState, golem1PatrolState, new FuncPredicate(CanPainToPatrol));
-
-                    AddAnyTransition(chaseState, new FuncPredicate(CanAnyToChase));
-                    AddAnyTransition(attackState, new FuncPredicate(CanAnyToAttack));
-                    AddAnyTransition(painState, new FuncPredicate(CanAnyToPain));
-                    AddAnyTransition(deadState, new FuncPredicate(CanAnyToDead));
-                }*/
                 
             }
 
@@ -117,8 +100,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             {
                 base.OnEnable();
 
+                healthBar?.Hide();
+
                 stateMachine.OnChangeState += StateMachine_OnChangeState;
-                // OnTakeDamage += Self_OnTakeDamage;
             }
 
             protected virtual void Update()
@@ -145,7 +129,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             {
                 base.OnDisable();
                 
-                // OnTakeDamage -= Self_OnTakeDamage;
                 stateMachine.OnChangeState -= StateMachine_OnChangeState;
             }
 
@@ -209,14 +192,6 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
 
         #region EVENT ACTION
         
-        private void Self_OnTakeDamage(object sender, HitData e)
-        {
-            if (!isDead)
-            {
-                isRequestingPain = true;
-            }
-        }
-
         protected virtual void StateMachine_OnChangeState()
         {
             previousState = currentState;
@@ -329,6 +304,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         {
             currentState = BaseEnemyState.State.Attack;
             isAttacking = true;
+            
+            //##
+            PlayAttackSound();
         }
 
         public virtual void Finish_AttackState()
@@ -371,6 +349,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
 
         public virtual bool PlayerInChaseRange()
         {
+            if (GameMode_Platformer.Instance.Player.IsDead) return false;
+
             return targetTransform.position.x > PatrolPositionLeft.x
                 && targetTransform.position.x < PatrolPositionRight.x
                 && targetTransform.position.y > ChasePositionBelow.y
@@ -379,6 +359,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             
         public virtual bool PlayerInAttackRange()
         {
+            if (GameMode_Platformer.Instance.Player.IsDead) return false;
+                
             int coefficient = isFlippingLeft ? -1 : 1;
             coefficient = isBeginFlipLeft ? coefficient * -1 : coefficient;
 
@@ -469,6 +451,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
                     {
                         HitData hitData = new HitData(
                             damageCauser: this,
+                            damage: (int) Random.Range(_normalDamage.x, _normalDamage.y),
                             isCausedByPlayer: false
                         );
                         
@@ -516,34 +499,23 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             Gizmos.DrawWireCube(boxCenter, boxSize);
         }
         
-        #region IDAMAGEABLE
-
-        public override bool ITakeDamage(HitData hitData)
+        protected override void HandleTakeDamage(HitData hitData)
         {
-            bool result = base.ITakeDamage(hitData);
-
+            base.HandleTakeDamage(hitData);
+            
             if (healthBar != null)
             {
                 healthBar?.Update_Bar(GetHealthPercentage());
             }
-
-            if (!result) return false;
-
-            //## Dead Event
-            if (isDead)
-            {
-                OnAnyDeadEnemy?.Invoke(this, EventArgs.Empty);
-            }
-
-            return true;
         }
 
-        #endregion
-        
         protected override void HandlePain()
         {
             base.HandlePain();
             
+            //##
+            PlayPainSound();
+                
             //##
             if (canPain)
             {
@@ -554,8 +526,18 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
         protected override void HandleDead()
         {
             base.HandleDead();
+            
+            //##
+            PlayDeadSound();
+
+            healthBar?.Hide();
 
             SpawnRandomItem();
+            
+            if (isDead)
+            {
+                OnAnyDeadEnemy?.Invoke(this, EventArgs.Empty);
+            }
         }
         
 
@@ -622,6 +604,35 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
 
             }
         }
+
+
+        #region EFFECT
+
+        private void PlayAttackSound()
+        {
+            if (attack_1_SoundType is SoundType.NONE || attack_2_SoundType is SoundType.NONE )return;
+            
+            SoundType attackType = Random.Range(0, 2) == 0 ? attack_1_SoundType : attack_2_SoundType;
+            ((SoundManager)SoundManager.Instance).PlaySound(attackType);
+        }
+        
+        private void PlayPainSound()
+        {
+            if (pain_SoundType is SoundType.NONE)return;
+
+            ((SoundManager)SoundManager.Instance).PlaySound(pain_SoundType);
+        }
+        
+        private void PlayDeadSound()
+        {
+            if (dead_SoundType is SoundType.NONE)return;
+
+            ((SoundManager)SoundManager.Instance).PlaySound(dead_SoundType);
+        }
+        
+        
+
+        #endregion
 
         
     }

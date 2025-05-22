@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using HIEU_NL.Manager;
@@ -102,7 +103,14 @@ public class PauseGameUI_PuzzleCanvas : RyoMonoBehaviour
 
     private void Restart()
     {
-        SceneTransitionManager.Instance.LoadScene(EScene.Puzzle);
+        if (GameMode_Puzzle.Instance.IsGamePaused())
+        {
+            GameMode_Puzzle.Instance.TogglePauseGame();
+        }
+        
+        Hide();
+        
+        SceneTransitionManager.Instance.ReloadCurrentScene();
     }
     
     private void Music()
@@ -121,6 +129,13 @@ public class PauseGameUI_PuzzleCanvas : RyoMonoBehaviour
     
     private void MainMenu()
     {
+        if (GameMode_Puzzle.Instance.IsGamePaused())
+        {
+            GameMode_Puzzle.Instance.TogglePauseGame();
+        }
+        
+        Hide();
+
         SceneTransitionManager.Instance.LoadScene(EScene.MainMenu);
     }
 
@@ -150,11 +165,23 @@ public class PauseGameUI_PuzzleCanvas : RyoMonoBehaviour
 
     public void Show()
     {
-        gameObject.SetActive(true);
+        try
+        {
+            gameObject.SetActive(true);
+        }
+        catch (Exception e)
+        {
+        }
     }
 
     public void Hide()
     {
-        gameObject.SetActive(false);
+        try
+        {
+            gameObject.SetActive(false);
+        }
+        catch (Exception e)
+        {
+        }
     }
 }

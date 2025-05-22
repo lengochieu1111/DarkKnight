@@ -31,19 +31,25 @@ public class MapSingleUI_MainMenuCanvas : RyoMonoBehaviour
     {
         if (FirebaseManager.Instance.CurrentUser == null || !_isUnlocked) return;
 
-        bool isPlayPuzzleScene = FirebaseManager.Instance.CurrentUser.CurrentMaxLevelIndex.Equals(_mapData.MapIndex) 
-                                 && !FirebaseManager.Instance.CurrentUser.PuzzleUnlocked;
-        
         FirebaseManager.Instance.UseLevel(_mapData.MapIndex);
-            
-        if (isPlayPuzzleScene)
-        {
-            SceneTransitionManager.Instance.LoadScene(EScene.Puzzle);
-        }
-        else
+        
+        if (FirebaseManager.Instance.CurrentUser.CurrentLevelIndex <
+            FirebaseManager.Instance.CurrentUser.CurrentMaxLevelIndex)
         {
             SceneTransitionManager.Instance.LoadScene(EScene.Platformer);
         }
+        else
+        {
+            if (FirebaseManager.Instance.CurrentUser.PuzzleUnlocked)
+            {
+                SceneTransitionManager.Instance.LoadScene(EScene.Platformer);
+            }
+            else
+            {
+                SceneTransitionManager.Instance.LoadScene(EScene.Puzzle);
+            }
+        }
+        
     }
     
     public void UpdateVisual(MapData mapData, Sprite lockState, bool isUnlock)
@@ -55,7 +61,7 @@ public class MapSingleUI_MainMenuCanvas : RyoMonoBehaviour
         _lockImage.sprite = lockState;
         
         _mapNameText.text = mapData.MapName;
-        _mapIndexText.text = mapData.MapIndex.ToString();
+        _mapIndexText.text = (mapData.MapIndex + 1).ToString();
 
     }
 

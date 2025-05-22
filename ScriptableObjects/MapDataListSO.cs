@@ -31,6 +31,8 @@ namespace HIEU_NL.SO.Map
         [BoxGroup("INFORMATION"), ShowAssetPreview] public Sprite MapSprite;
         [BoxGroup("INFORMATION")] public int MapIndex;
         [BoxGroup("INFORMATION")] public string MapName;
+        
+        [BoxGroup("PLAYER")] public int PlayerHealth;
 
     }
 

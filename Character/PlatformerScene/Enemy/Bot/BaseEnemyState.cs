@@ -14,7 +14,10 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy
             Chase,
             Attack,
             Pain,
-            Dead
+            Dead,
+            
+            Enhanced,
+            Defense
         }
         
         /// <summary>

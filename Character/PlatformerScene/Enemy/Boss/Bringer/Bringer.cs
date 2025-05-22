@@ -1,4 +1,6 @@
+using HIEU_NL.Platformer.Script.Effect;
 using HIEU_NL.Platformer.Script.Entity.Enemy.Boss;
+using HIEU_NL.Platformer.Script.Game;
 using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using NaughtyAttributes;
@@ -12,6 +14,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Bringer
     {
         //# STATE MACHINE
         private Bringer_State.IdleState _idleState; //## Default State
+        
+        [SerializeField, Foldout("Attack"), MinMaxSlider(5, 20)] private Vector2 _spellDamage  = new Vector2 (10, 10);
         
         [SerializeField, BoxGroup("Shale Camera")] private CinemachineImpulseSource _cinemachineImpulseSource;
         [SerializeField, BoxGroup("Shale Camera")] private Vector3 _footstepForce;
@@ -67,6 +71,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Bringer
         
         protected override bool CanAnyToAttack()
         {
+            if (!IsActivate) return false;
+            
             if (attackIndex == 1)
             {
                 return PlayerInChaseRange();
@@ -106,6 +112,13 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Bringer
                 Vector3 spawnPosition = new Vector3(targetTransform.position.x, MyTransform.position.y, MyTransform.position.z);
                 Prefab_Platformer spellPrefab = ObjectPool_Platformer.Instance.GetPoolObject(
                     PrefabType_Platformer.Spell_Bringer, spawnPosition);
+
+                if (spellPrefab is AttackEffect_Platformer attackEffect)
+                {
+                    HitData hitData = new HitData(damage: (int)Random.Range(_spellDamage.x, _spellDamage.y));
+                    attackEffect.Setup(hitData);
+                }
+                
                 spellPrefab.Activate();
             }
         }
@@ -115,6 +128,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Bringer
 
         public override bool PlayerInChaseRange()
         {
+            if (GameMode_Platformer.Instance.Player.IsDead) return false;
+
             return targetTransform.position.x > PatrolPositionLeft.x - 3f
                    && targetTransform.position.x < PatrolPositionRight.x + 3f
                    && targetTransform.position.y > ChasePositionBelow.y

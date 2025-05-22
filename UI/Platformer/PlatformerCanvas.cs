@@ -1,14 +1,26 @@
+using System;
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using HIEU_NL.DesignPatterns.Singleton;
-using HIEU_NL.Manager;
 using HIEU_NL.Platformer.Script.Game;
 using UnityEngine;
 
 public class PlatformerCanvas : Singleton<PlatformerCanvas>
 {
+    public event EventHandler OnBossComing;
+    
     [SerializeField] private PlatformerUI _platformerUI;
     [SerializeField] private BossBattleUI_PlatformerCanvas _bossBattleUI;
     [SerializeField] private EndGameUI_PlatformerCanvas _endGameUI;
     [SerializeField] private PauseGameUI_PlatformerCanvas _pauseGameUI;
+    
+    [Header("Boss Coming Effects")]
+    [SerializeField] private GameObject _bossComingObject;
+    [SerializeField] private CanvasGroup _canvasGroup;
+    [SerializeField] private float _fadeDuration = 1.0f;
+    [SerializeField] private Ease _fadeInEase = Ease.InOutSine;
+    [SerializeField] private Ease _fadeOutEase = Ease.InOutSine;
+    [SerializeField] private float _delayBetweenFades = 1.0f;
 
     protected override void OnEnable()
     {
@@ -19,6 +31,7 @@ public class PlatformerCanvas : Singleton<PlatformerCanvas>
         HideBossBattleUI();
         HidePauseGameUI();
         HideEndGameUI();
+        HideBossComingEffect();
         
         //##
         MusicManager.Instance.PlayMusic_Platformer();
@@ -48,8 +61,7 @@ public class PlatformerCanvas : Singleton<PlatformerCanvas>
 
     private void GameManager_OnBossBattle(object sender, System.EventArgs e)
     {
-        ShowBossBattleUI();
-        HidePlatformerUI();
+        ShowBossComingEffect();
     }
     
     private void GameManager_OnPauseGame(object sender, System.EventArgs e)
@@ -106,6 +118,45 @@ public class PlatformerCanvas : Singleton<PlatformerCanvas>
     private void HideEndGameUI()
     {
         _endGameUI.Hide();
+    }
+    
+    private void ShowBossComingEffect()
+    {
+        _bossComingObject.SetActive(true);
+
+        // Tạo tween để fade in từ 0 đến 1
+        _canvasGroup.DOFade(1f, _fadeDuration)
+            .SetEase(_fadeInEase)
+            .OnComplete(() => 
+            {
+                //
+                OnBossComing?.Invoke(this, EventArgs.Empty);
+                
+                ShowBossBattleUI();
+                HidePlatformerUI();
+                
+                UT_ShowBossComingEffect().Forget();
+            });
+
+        async UniTask UT_ShowBossComingEffect()
+        {
+            await UniTask.WaitForSeconds(_delayBetweenFades);
+            
+            // Tạo tween để fade out từ 1 đến 0
+            _canvasGroup.DOFade(0f, _fadeDuration / 2f)
+                .SetEase(_fadeOutEase)
+                .OnComplete(() =>
+                {
+                    HideBossComingEffect();
+                });
+        }
+        
+    }
+
+    private void HideBossComingEffect()
+    {
+        _canvasGroup.alpha = 0f;
+        _bossComingObject.SetActive(false);
     }
     
 }

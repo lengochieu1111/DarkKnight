@@ -18,7 +18,7 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
         EFFECT_Slash_1_Normal,
         EFFECT_Slash_2_Normal,
         
-        EFFECT_Blood_1,
+        EFFECT_Blood_Red,
     
         //## Bot
         BOT_Golem_1,
@@ -79,6 +79,26 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
         
         //## Others
         Spell_Bringer,
+        Ice_Viking,
+        
+        //## Effect
+        EFFECT_SpecialSlash_Normal,
+        EFFECT_SpecialSlash_Blue,
+        EFFECT_SpecialSlash_Red,
+        EFFECT_SpecialSlash_Purple,
+        
+        EFFECT_HitSlash_Normal,
+        EFFECT_HitSlash_Blue,
+        EFFECT_HitSlash_Red,
+        EFFECT_HitSlash_Purple,
+        
+        EFFECT_Blood_Green,
+        EFFECT_Blood_Orange,
+        EFFECT_Blood_White,
+        
+        
+        EFFECT_DamageNumber
+
         
     }
     

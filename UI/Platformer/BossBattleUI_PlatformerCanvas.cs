@@ -1,18 +1,20 @@
 using HIEU_NL.Platformer.Script.Entity.Enemy.Boss;
 using HIEU_NL.Platformer.Script.Entity.Player;
+using HIEU_NL.SO.Map;
 using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class BossBattleUI_PlatformerCanvas : RyoMonoBehaviour
 {
+    [SerializeField, BoxGroup("Background")] private MapDataListSO _mapDataListSO;
     [SerializeField, BoxGroup("Background")] private Image _backgroundImage;
+    [SerializeField, BoxGroup("Background")] private Image _bossImage;
     
     [SerializeField, BoxGroup("Player Bar")] private Bar_PlatformerUI _playerHealthBar;
     [SerializeField, BoxGroup("Player Bar")] private Bar_PlatformerUI _playerEnergyBar;
     
     [SerializeField, BoxGroup("Boss Bar")] private Bar_PlatformerUI _bossHealthBar;
-    [SerializeField, BoxGroup("Boss Bar")] private Bar_PlatformerUI _bossEnergyBar;
     
     protected override void OnEnable()
     {
@@ -22,7 +24,6 @@ public class BossBattleUI_PlatformerCanvas : RyoMonoBehaviour
         Player_Platformer.OnHealthChange += Player_OnHealthChange;
         Player_Platformer.OnEnergyChange += Player_OnEnergyChange;
         BaseBoss.OnHealthChange += Boss_OnHealthChange;
-        BaseBoss.OnEnergyChange += Boss_OnEnergyChange;
     }
 
     #region Event Action
@@ -42,11 +43,6 @@ public class BossBattleUI_PlatformerCanvas : RyoMonoBehaviour
         _bossHealthBar.Update_Bar(e);
     }
     
-    private void Boss_OnEnergyChange(object sender, float e)
-    {
-        _bossEnergyBar.Update_Bar(e);
-    }
-    
     #endregion
     
     //#
@@ -60,6 +56,8 @@ public class BossBattleUI_PlatformerCanvas : RyoMonoBehaviour
     
     public void Show()
     {
+        int levelIndex = FirebaseManager.Instance.CurrentUser.CurrentLevelIndex;
+        _bossImage.sprite = _mapDataListSO.MapAssetList[levelIndex].MapSprite;
         gameObject.SetActive(true);
     }
 

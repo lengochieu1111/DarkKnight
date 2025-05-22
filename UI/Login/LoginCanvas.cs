@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using HIEU_NL.DesignPatterns.Singleton;
 
@@ -8,7 +9,8 @@ public class LoginCanvas : Singleton<LoginCanvas>
     [SerializeField] private LoginUI _loginUI;
     [SerializeField] private NewProfileUI_LoginCanvas _newProfileUI;
     [SerializeField] private SelectProfileUI_LoginCanvas _selectProfileUI;
-
+    [SerializeField] private AchivementUI _achivementUI;
+    [SerializeField] private CreditUI _creditUI;
 
     protected override void OnEnable()
     {
@@ -18,6 +20,8 @@ public class LoginCanvas : Singleton<LoginCanvas>
         ShowLoginUI();
         HideNewProfileUI();
         HideSelectProfileUI();
+        HideAchivementUI();
+        HideCreditUI();
         
         //##
         MusicManager.Instance.PlayMusic_Login();
@@ -51,12 +55,36 @@ public class LoginCanvas : Singleton<LoginCanvas>
     
     public void ShowSelectProfileUI()
     {
-        _selectProfileUI.Show();
+        _selectProfileUI.Show().Forget();
     }
     
     public void HideSelectProfileUI()
     {
         _selectProfileUI.Hide();
+    }
+    
+    // AchivementUI
+    
+    public void ShowAchivementUI()
+    {
+        _achivementUI.Show().Forget();
+    }
+    
+    public void HideAchivementUI()
+    {
+        _achivementUI.Hide();
+    }
+    
+    // Credit UI
+    
+    public void ShowCreditUI()
+    {
+        _creditUI.Show().Forget();
+    }
+    
+    public void HideCreditUI()
+    {
+        _creditUI.Hide();
     }
 
     #endregion

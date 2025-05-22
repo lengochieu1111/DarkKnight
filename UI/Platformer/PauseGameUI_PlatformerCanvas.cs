@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using HIEU_NL.Manager;
@@ -102,7 +103,14 @@ public class PauseGameUI_PlatformerCanvas : RyoMonoBehaviour
 
     private void Restart()
     {
-        SceneTransitionManager.Instance.LoadScene(EScene.Platformer);
+        if (GameMode_Platformer.Instance.IsGamePaused)
+        {
+            GameMode_Platformer.Instance.TogglePauseGame();
+        }
+        
+        // Hide();
+        
+        SceneTransitionManager.Instance.ReloadCurrentScene();
     }
     
     private void Music()
@@ -121,6 +129,13 @@ public class PauseGameUI_PlatformerCanvas : RyoMonoBehaviour
     
     private void MainMenu()
     {
+        if (GameMode_Platformer.Instance.IsGamePaused)
+        {
+            GameMode_Platformer.Instance.TogglePauseGame();
+        }
+        
+        // Hide();
+        
         SceneTransitionManager.Instance.LoadScene(EScene.MainMenu);
     }
 
@@ -155,6 +170,12 @@ public class PauseGameUI_PlatformerCanvas : RyoMonoBehaviour
 
     public void Hide()
     {
-        gameObject.SetActive(false);
+        try
+        {
+            gameObject.SetActive(false);
+        }
+        catch (Exception e)
+        {
+        }
     }
 }

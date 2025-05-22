@@ -9,7 +9,13 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
 
         public virtual void Activate()
         {
-            gameObject.SetActive(true);
+            try
+            {
+                gameObject.SetActive(true);
+            }
+            catch (Exception e)
+            {
+            }
         }
 
         public virtual void Deactivate()

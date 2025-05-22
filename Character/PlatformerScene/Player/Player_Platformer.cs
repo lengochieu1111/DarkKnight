@@ -1,12 +1,17 @@
 ﻿using System;
 using UnityEngine;
 using Architecture.MVC;
+using HIEU_NL.Manager;
+using HIEU_NL.ObjectPool.Audio;
+using HIEU_NL.Platformer.Script.Effect;
+using HIEU_NL.Platformer.Script.Game;
 using HIEU_NL.Platformer.Script.GameItem;
 using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using HIEU_NL.SO.Weapon;
 using HIEU_NL.Utilities;
 using NaughtyAttributes;
+using UnityEngine.InputSystem;
 
 namespace HIEU_NL.Platformer.Script.Entity.Player
 {
@@ -16,6 +21,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
     {
         #region CREATE EVENT
 
+        public static event EventHandler OnPlayerPause;
         public static event EventHandler<float> OnHealthChange; // float : health percent
         public static event EventHandler<float> OnEnergyChange; // float : energy percent
 
@@ -104,6 +110,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         [BoxGroup("Attack")]
         [SerializeField] private bool _isAttacking;
+        [SerializeField] private bool _isSpecialAttack;
         [SerializeField] private Transform _attackPointTransform;
         [SerializeField] private int _attackIndex;
         [SerializeField] private int _maxAttackIndex = 2;
@@ -128,6 +135,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         
         //# PICK UP
         [SerializeField, BoxGroup("PICK UP")] protected PlayerPickUp_Platformer playerPickUp;
+        
+        [BoxGroup("AUDIO")] [SerializeField] private AudioSource _footstepAudioSource;
 
 
         #region UNITY CORE
@@ -148,7 +157,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             _inputActions.Enable();
             
             playerPickUp.OnPickUp += PlayerPickUp_OnPickUp;
+            _inputActions.Player.Pause.started += Player_Pause;
         }
+        
 
         protected override void OnDisable()
         {
@@ -166,7 +177,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
             CountTimer();
 
-            AttackChesck();
+            AttackChecks();
 
             JumpChecks();
             LandChecks();
@@ -227,8 +238,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
             ResetAttack();
 
-            // _weaponIndex = FirebaseManager.Instance.CurrentUser.CurrentWeaponIndex;
-            _weaponIndex = 1;
+            _weaponIndex = FirebaseManager.Instance.CurrentUser.CurrentWeaponIndex;
             _verticalVelocity = Physics2D.gravity.y;
         }
 
@@ -261,6 +271,14 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         {
             HandlePickUp(e);
         }
+        
+        private void Player_Pause(InputAction.CallbackContext obj)
+        {
+            if (GameMode_Platformer.Instance.IsGamePlaying())
+            {
+                OnPlayerPause.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         #endregion
 
@@ -288,7 +306,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         private void Move(float acceleration, float deceleration, Vector2 moveInput)
         {
-            if (!_isDashing)
+            if (!_isDashing && !_isAttacking)
             {
                 bool isMoving = Mathf.Abs(moveInput.x) >= model.MovementStats.MoveThreshold;
 
@@ -317,6 +335,21 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
                 }
 
                 _animator.SetBool("IsMoving", moveInput.x != 0);
+
+                if (isGrounded && moveInput.x != 0)
+                {
+                    if (!_footstepAudioSource.isPlaying)
+                    {
+                        _footstepAudioSource?.Play();
+                    }
+                }
+                else
+                {
+                    if (_footstepAudioSource.isPlaying)
+                    {
+                        _footstepAudioSource?.Stop();
+                    }
+                }
 
             }
         }
@@ -429,6 +462,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
         {
             //## PLAY ANIMATION
             PlayAnimation_JumpStart();
+            PlayJumpSound();
 
             //##
             if (!_isJumping)
@@ -541,6 +575,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             {
                 //## PLAY ANIMATION
                 PlayAnimation_Landing();
+                PlayLandingSound();
 
                 //##
                 ResetJumpValues();
@@ -588,6 +623,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             {
                 if (_verticalVelocity < 0f && !_isWallSliding)
                 {
+                    //##
+                    PlayLandingSound();
+                    
                     ResetJumpValues();
                     ResetWallJumpValues();
                     ResetDashValues();
@@ -679,6 +717,9 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         private void InitiateWallJump()
         {
+            //##
+            PlayJumpSound();
+                
             if (!_isWallJumping)
             {
                 _isWallJumping = true;
@@ -839,8 +880,10 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         private void DashCheck()
         {
-            if (_dashWasPressed)
+            if (_dashWasPressed && energy >= model.MovementStats.DashEnergyReduct)
             {
+                ReductEnergy(model.MovementStats.DashEnergyReduct);
+                
                 // ground dash
                 if (isGrounded && _dashOnGroundTimer < 0 && !_isDashing)
                 {
@@ -921,6 +964,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             ResetWallJumpValues();
             StopWallSlide();
 
+            PlayDashSound();
+
         }
 
         private void Dash()
@@ -985,9 +1030,336 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
             }
         }
 
+        private void PlayDashSound()
+        {
+            SoundType dash = UnityEngine.Random.Range(0, 2) == 0 ? SoundType.Dash_1 : SoundType.Dash_2;
+            ((SoundManager)SoundManager.Instance).PlaySound(dash);
+        }
+
         #endregion
 
-        /*#region Collision Checks
+
+        #region Timer
+
+        private void CountTimer()
+        {
+            // jump buffer
+            _jumpBufferTimer -= Time.deltaTime;
+
+            // jump coyote time
+            if (!isGrounded)
+            {
+                _coyoteTimer -= Time.deltaTime;
+            }
+            else
+            {
+                _coyoteTimer = model.MovementStats.JumpCoyoteTime;
+            }
+
+            // wall jump biffer timer
+            if (!ShouldApplyPostWallJumpBuffer())
+            {
+                _wallJumpPostBufferTimer -= Time.deltaTime;
+            }
+
+            // dash timer
+            if (isGrounded)
+            {
+                _dashOnGroundTimer -= Time.deltaTime;
+            }
+        }
+
+        #endregion
+
+        #region Apply Velocity
+
+        private void ApplyVelocity()
+        {
+            // clam fall speed
+            if (!_isDashing)
+            {
+                _verticalVelocity = Mathf.Clamp(_verticalVelocity, -model.MovementStats.MaxFallSpeed, 50f);
+            }
+
+            else
+            {
+                _verticalVelocity = Mathf.Clamp(_verticalVelocity, -50, 50f);
+            }
+
+            rigidbody_.velocity = new Vector2(_horizontalVelocity, _verticalVelocity);
+        }
+
+        #endregion
+
+        #region Attack
+
+        private void ResetAttack()
+        {
+            _attackIndex = 0;
+            _isAttacking = false;
+        }
+
+        private void AttackChecks()
+        {
+            if (_attackNormalWasPressed || _attackStrongWasPressed)
+            {
+                if (!_isAttacking)
+                {
+                    _isSpecialAttack = _attackStrongWasPressed;
+                    InitiateAttack();
+                }
+            }
+
+        }
+
+        private void InitiateAttack()
+        {
+            _isAttacking = true;
+
+            //## PLAY AMIMATION
+            PlayAnimation_Attack();
+        }
+
+        public void SpawnSlash()
+        {
+            Vector2 attackDirection = (Vector2)(_attackPointTransform.position - MyTransform.position);
+
+            float angle = Mathf.Atan2(attackDirection.y, attackDirection.x) * Mathf.Rad2Deg;
+            Quaternion attackRotation = Quaternion.Euler(new Vector3(0, 0, angle));
+
+            if (isFlippingLeft)
+            {
+                attackRotation = Quaternion.Euler(-180, attackRotation.eulerAngles.y, attackRotation.eulerAngles.z);
+            }
+
+            //##
+            PrefabType_Platformer slashPrefabType;
+
+            if (_isSpecialAttack)
+            {
+                _weaponAttackData = model.AttackStats.WeaponDataListSO.WeaponDataList[_weaponIndex]
+                    .WeaponPrefab_Platformer;
+                slashPrefabType = _weaponAttackData.SpecialAttackEffect;
+            }
+            else
+            {
+                _weaponAttackData = model.AttackStats.WeaponDataListSO.WeaponDataList[_weaponIndex]
+                    .WeaponPrefab_Platformer;
+                slashPrefabType =
+                    _attackIndex == 0 ? _weaponAttackData.AttackEffectOne : _weaponAttackData.AttackEffectTwo;
+            }
+
+            Prefab_Platformer slashPrefab = ObjectPool_Platformer.Instance.GetPoolObject(slashPrefabType,
+                rotation: attackRotation, parent: _attackPointTransform);
+
+            if (slashPrefab is AttackEffect_Platformer attackEffect)
+            {
+                HitData hitData;
+                if (_isSpecialAttack)
+                {
+                    hitData = new HitData(damage: model.AttackStats.WeaponDataListSO
+                        .WeaponDataList[_weaponIndex].WeaponSpecialDamage);
+
+                    ReductEnergy(model.AttackStats.WeaponDataListSO.WeaponDataList[_weaponIndex]
+                        .WeaponSpecialEnergyReduct);
+                }
+                else
+                {
+                    hitData = new HitData(damage: model.AttackStats.WeaponDataListSO
+                        .WeaponDataList[_weaponIndex].WeaponNormalDamage);
+                    
+                    attackEffect.OnInteracted += AttackEffect_OnInteracted;
+                    
+                    void AttackEffect_OnInteracted(object sender, EventArgs e)
+                    {
+                        AddEnergy(model.AttackStats.WeaponDataListSO.WeaponDataList[_weaponIndex]
+                            .WeaponNormalEnergyRecovery);
+                        
+                        Debug.Log("Add Energy");
+                        attackEffect.OnInteracted -= AttackEffect_OnInteracted;
+                    }
+                }
+                
+                attackEffect.Setup(hitData);
+            }
+            
+            slashPrefab?.Activate();
+
+        }
+
+    // }
+
+        public void EndAttack()
+        {
+            _attackIndex = (_attackIndex + 1) % _maxAttackIndex;
+            _isAttacking = false;
+        }
+
+        #endregion
+
+
+        #region ANIMATION
+
+        private void PlayAnimation_JumpStart()
+        {
+            PlayerAnimation(ANIM_HASH_JumpStart);
+        }
+
+        private void PlayAnimation_Landing()
+        {
+            PlayerAnimation(ANIM_HASH_JumpEnd);
+        }
+
+        private void PlayAnimation_Attack()
+        {
+            PlayerAnimation(ANIM_HASH_Attack, 0.15f);
+        }
+        
+        private void PlayAnimation_Dead()
+        {
+            PlayerAnimation(ANIM_HASH_Dead, 0.15f);
+        }
+        
+        private void PlayJumpSound()
+        {
+            ((SoundManager)SoundManager.Instance).PlaySound(SoundType.Jump);
+        }
+        
+        private void PlayLandingSound()
+        {
+            ((SoundManager)SoundManager.Instance).PlaySound(SoundType.Landing);
+        }
+        
+        private void PlayTakeDamageSound()
+        {
+            ((SoundManager)SoundManager.Instance).PlaySound(SoundType.TakeDamage);
+        }
+        
+        private void PlayDeadSound()
+        {
+            ((SoundManager)SoundManager.Instance).PlaySound(SoundType.Dead);
+        }
+        
+        //# BASE
+        private void PlayerAnimation(int animationHash, float crossFadeTime = 0.2f)
+        {
+            _animator.CrossFadeInFixedTime(animationHash, crossFadeTime);
+        }
+
+        #endregion
+
+        #region EFFECT
+
+        private void PlayEffect_Dust()
+        {
+            _dustParticle.Play();
+        }
+
+        #endregion
+
+        protected override void HandleTakeDamage(HitData hitData)
+        {
+            base.HandleTakeDamage(hitData);
+
+            if (hitData.DamageCauser is Spike_Platformer)
+            {
+                _inputDirection = Vector2.zero;
+            }
+
+            //##
+            PlayTakeDamageSound();
+            
+            //## Health Change Event
+            OnHealthChange?.Invoke(this, GetHealthPercentage());
+        }
+
+
+        protected override void HandleDead()
+        {
+            base.HandleDead();
+            
+            //##
+            _inputActions.Disable();
+            
+            //##
+            PlayDeadSound();
+            PlayAnimation_Dead();
+        }
+
+
+        private void HandlePickUp(BaseGameItem_Platformer gameItem)
+        {
+            if (gameItem is Medicine_Platformer medicine)
+            {
+                HandlePickUpMedicine(medicine.MedicineType, medicine.CapacityType);
+                
+                //##
+                if (medicine.MedicineType is Medicine_Platformer.EMedicineType.Health)
+                {
+                    FirebaseManager.Instance.UpdateMissionAmount(0, 1);
+                }
+                else if (medicine.MedicineType is Medicine_Platformer.EMedicineType.Energy)
+                {
+                    FirebaseManager.Instance.UpdateMissionAmount(1, 1);
+                }
+                
+            }
+
+            gameItem.PickUpSelf();
+        }
+
+        private void HandlePickUpMedicine(Medicine_Platformer.EMedicineType medicineType, Medicine_Platformer.ECapacityType capacityType)
+        {
+            int addValue = (int)capacityType;
+            switch (medicineType)
+            {
+                case Medicine_Platformer.EMedicineType.Health:
+                    health = Mathf.Clamp(health + addValue, 0, maxHealth);
+                    
+                    Prefab_Platformer pickUp_MedicineHealth_Effect =
+                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.EFFECT_PickUp_Medicine_Health_Effect,
+                            centerOfBodyTransform.position, Quaternion.identity, centerOfBodyTransform);
+                    pickUp_MedicineHealth_Effect.Activate();
+                    
+                    OnHealthChange?.Invoke(this, GetHealthPercentage());
+
+                    break;
+                
+                case Medicine_Platformer.EMedicineType.Energy:
+                    energy = Mathf.Clamp(energy + addValue, 0, maxEnergy);
+                    
+                    Prefab_Platformer pickUp_MedicineEnergy_Effect =
+                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.EFFECT_PickUp_Medicine_Energy_Effect,
+                            centerOfBodyTransform.position, Quaternion.identity, centerOfBodyTransform);
+                    pickUp_MedicineEnergy_Effect.Activate();
+                    
+                    OnEnergyChange?.Invoke(this, GetEnergyPercentage());
+
+                    break;
+            }
+        }
+        
+        public float GetEnergyPercentage() { return energy * 1f / maxEnergy; }
+
+
+        private void AddEnergy(int addEnergy)
+        {
+            energy = Mathf.Clamp(energy + addEnergy, 0, maxEnergy);
+            
+            OnEnergyChange?.Invoke(this, GetEnergyPercentage());
+        }
+        
+        private void ReductEnergy(int reductEnergy)
+        {
+            energy = Mathf.Clamp(energy - reductEnergy, 0, maxEnergy);
+            
+            OnEnergyChange?.Invoke(this, GetEnergyPercentage());
+        }
+
+        
+    }
+    
+    /*#region Collision Checks
 
         private void CollisionChesks()
         {
@@ -1096,216 +1468,5 @@ namespace HIEU_NL.Platformer.Script.Entity.Player
 
         #endregion*/
 
-        #region Timer
-
-        private void CountTimer()
-        {
-            // jump buffer
-            _jumpBufferTimer -= Time.deltaTime;
-
-            // jump coyote time
-            if (!isGrounded)
-            {
-                _coyoteTimer -= Time.deltaTime;
-            }
-            else
-            {
-                _coyoteTimer = model.MovementStats.JumpCoyoteTime;
-            }
-
-            // wall jump biffer timer
-            if (!ShouldApplyPostWallJumpBuffer())
-            {
-                _wallJumpPostBufferTimer -= Time.deltaTime;
-            }
-
-            // dash timer
-            if (isGrounded)
-            {
-                _dashOnGroundTimer -= Time.deltaTime;
-            }
-        }
-
-        #endregion
-
-        #region Apply Velocity
-
-        private void ApplyVelocity()
-        {
-            // clam fall speed
-            if (!_isDashing)
-            {
-                _verticalVelocity = Mathf.Clamp(_verticalVelocity, -model.MovementStats.MaxFallSpeed, 50f);
-            }
-
-            else
-            {
-                _verticalVelocity = Mathf.Clamp(_verticalVelocity, -50, 50f);
-            }
-
-            rigidbody_.velocity = new Vector2(_horizontalVelocity, _verticalVelocity);
-        }
-
-        #endregion
-
-        #region Attack
-
-        private void ResetAttack()
-        {
-            _attackIndex = 0;
-            _isAttacking = false;
-        }
-
-        private void AttackChesck()
-        {
-            if (_attackNormalWasPressed || _attackNormalWasPressed)
-            {
-                if (!_isAttacking)
-                {
-                    InitiateAttack();
-
-                }
-            }
-
-        }
-
-        private void InitiateAttack()
-        {
-            _isAttacking = true;
-
-            //## PLAY AMIMATION
-            PlayAnimation_Attack();
-        }
-
-        public void SpawnSlash()
-        {
-            Vector2 attackDirection = (Vector2)(_attackPointTransform.position - MyTransform.position);
-
-            float angle = Mathf.Atan2(attackDirection.y, attackDirection.x) * Mathf.Rad2Deg;
-            Quaternion attackRotation = Quaternion.Euler(new Vector3(0, 0, angle));
-
-            if (isFlippingLeft)
-            {
-                attackRotation = Quaternion.Euler(-180, attackRotation.eulerAngles.y, attackRotation.eulerAngles.z);
-            }
-            
-            //##
-
-            _weaponAttackData = model.AttackStats.WeaponDataListSO.WeaponDataList[_weaponIndex]
-                .WeaponPrefab_Platformer;
-            PrefabType_Platformer slashPrefabType =
-                _attackIndex == 0 ? _weaponAttackData.AttackEffectOne : _weaponAttackData.AttackEffectTwo;
-            
-            Prefab_Platformer slashPrefab = ObjectPool_Platformer.Instance.GetPoolObject(slashPrefabType, rotation: attackRotation, parent: _attackPointTransform);
-            slashPrefab?.Activate();
-            
-        }
-
-        public void EndAttack()
-        {
-            _attackIndex = (_attackIndex + 1) % _maxAttackIndex;
-            _isAttacking = false;
-        }
-
-        #endregion
-
-        #region INTERFACE : DAMAGEABLE
-        
-        public override bool ITakeDamage(HitData hitData)
-        {
-            bool result = base.ITakeDamage(hitData);
-
-            if (!result) return false;
-
-            //## Health Change Event
-            OnHealthChange?.Invoke(this, GetHealthPercentage());
-
-            return true;
-            
-        }
-        
-        #endregion
-
-
-        #region ANIMATION
-
-        private void PlayAnimation_JumpStart()
-        {
-            PlayerAnimation(ANIM_HASH_JumpStart);
-        }
-
-        private void PlayAnimation_Landing()
-        {
-            PlayerAnimation(ANIM_HASH_JumpEnd);
-        }
-
-        private void PlayAnimation_Attack()
-        {
-            PlayerAnimation(ANIM_HASH_Attack, 0.15f);
-        }
-
-        //# BASE
-        private void PlayerAnimation(int animationHash, float crossFadeTime = 0.2f)
-        {
-            _animator.CrossFadeInFixedTime(animationHash, crossFadeTime);
-        }
-
-        #endregion
-
-        #region EFFECT
-
-        private void PlayEffect_Dust()
-        {
-            _dustParticle.Play();
-        }
-
-        #endregion
-        
-        
-        private void HandlePickUp(BaseGameItem_Platformer gameItem)
-        {
-            if (gameItem is Medicine_Platformer medicine)
-            {
-                HandlePickUpMedicine(medicine.MedicineType, medicine.CapacityType);
-            }
-
-            gameItem.PickUpSelf();
-        }
-
-        private void HandlePickUpMedicine(Medicine_Platformer.EMedicineType medicineType, Medicine_Platformer.ECapacityType capacityType)
-        {
-            int addValue = (int)capacityType;
-            switch (medicineType)
-            {
-                case Medicine_Platformer.EMedicineType.Health:
-                    health = Mathf.Clamp(health + addValue, 0, maxHealth);
-                    
-                    Prefab_Platformer pickUp_MedicineHealth_Effect =
-                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.EFFECT_PickUp_Medicine_Health_Effect,
-                            centerOfBodyTransform.position, Quaternion.identity, centerOfBodyTransform);
-                    pickUp_MedicineHealth_Effect.Activate();
-                    
-                    OnHealthChange?.Invoke(this, GetHealthPercentage());
-
-                    break;
-                
-                case Medicine_Platformer.EMedicineType.Energy:
-                    energy = Mathf.Clamp(energy + addValue, 0, maxEnergy);
-                    
-                    Prefab_Platformer pickUp_MedicineEnergy_Effect =
-                        ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.EFFECT_PickUp_Medicine_Energy_Effect,
-                            centerOfBodyTransform.position, Quaternion.identity, centerOfBodyTransform);
-                    pickUp_MedicineEnergy_Effect.Activate();
-                    
-                    OnEnergyChange?.Invoke(this, GetEnergyPercentage());
-
-                    break;
-            }
-        }
-        
-        public float GetEnergyPercentage() { return energy * 1f / maxEnergy; }
-
-        
-    }
 
 }

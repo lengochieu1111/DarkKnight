@@ -55,8 +55,44 @@ namespace HIEU_NL.ObjectPool.Audio
         Door_Open,
         
         //## KEY
-        Key_PickUp
+        Key_PickUp,
+        
+        //## Slash
+        Sword_Slash_Special,
+        Sword_Hit_Special,
 
+        NONE,
+        
+        Jump,
+        Landing,
+        
+        TakeDamage,
+        Dead,
+        
+        Man_1_Attack_1,
+        Man_1_Attack_2,
+        Man_1_Pain,
+        Man_1_Dead,
+        
+        Man_2_Attack_1,
+        Man_2_Attack_2,
+        Man_2_Pain,
+        Man_2_Dead,
+        
+        Man_3_Attack_1,
+        Man_3_Attack_2,
+        Man_3_Pain,
+        Man_3_Dead,
+        
+        Woman_1_Attack_1,
+        Woman_1_Attack_2,
+        Woman_1_Pain,
+        Woman_1_Dead,
+        
+        Monster_1_Attack_1,
+        Monster_1_Attack_2,
+        Monster_1_Pain,
+        Monster_1_Dead,
         
     }
 

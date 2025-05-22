@@ -25,8 +25,21 @@ public class User
     [FirestoreProperty] public int CurrentLevelIndex { get; set; }
     [FirestoreProperty] public int CurrentWeaponIndex { get; set; }
     [FirestoreProperty] public int CurrentCharacterIndex { get; set; }
-
-
+    [FirestoreProperty] public int CurrentCoin { get; set; }
+    [FirestoreProperty] public Mission Mission { get; set; }
+    
+    /*[FirestoreProperty] public int CurrentTicket_DoubleDamage { get; set; }
+    [FirestoreProperty] public int CurrentTicket_DoubleReward { get; set; }
+    [FirestoreProperty] public int CurrentTicket_Magnet { get; set; }
+    
+    [FirestoreProperty] public int CurrentTicket_HealthRegeneration { get; set; }
+    [FirestoreProperty] public int CurrentTicket_EnergyRegeneration { get; set; }*/
+    
+    /*[FirestoreProperty] public int HealthPotionCollectedAmount { get; set; }
+    [FirestoreProperty] public int EnergyPotionCollectedAmount { get; set; }
+    [FirestoreProperty] public int WeaponPurchasedAmount { get; set; }
+    [FirestoreProperty] public int BossesKilledAmount { get; set; }*/
+    
     public User(string name = STRING_EMPTY, int currentMaxLevelIndex = 0, bool puzzleUnlocked = false)
     {
         Name = name;
@@ -36,6 +49,10 @@ public class User
         CurrentLevelIndex = 0;
         CurrentWeaponIndex = 0;
         CurrentCharacterIndex = 0;
+        CurrentCoin = 0;
+        
+        Mission = new Mission();
+
     }
 
 }
@@ -50,6 +67,19 @@ public class Bag
     {
         Weapon = new List<int> { 0 };
         Character = new List<int> { 0 };
+    }
+}
+
+[FirestoreData]
+public class Mission
+{
+    [FirestoreProperty] public List<int> Amount { get; set; }
+    [FirestoreProperty] public List<bool> State { get; set; }
+
+    public Mission()
+    {
+        Amount = new List<int> { 0, 0, 0, 0 };
+        State = new List<bool> { false, false, false, false };
     }
 }
 
@@ -176,6 +206,8 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
                 { USER_FIELD_CurrentLevelIndex, CurrentUser.CurrentLevelIndex },
                 { USER_FIELD_CurrentWeaponIndex, CurrentUser.CurrentWeaponIndex },
                 { USER_FIELD_CurrentCharacterIndex, CurrentUser.CurrentCharacterIndex },
+                { USER_FIELD_CurrentCoin, CurrentUser.CurrentCoin },
+                { USER_FIELD_Mission, CurrentUser.Mission },
             });
 
             //
@@ -197,6 +229,9 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
             { USER_FIELD_CurrentLevelIndex, user.CurrentLevelIndex },
             { USER_FIELD_CurrentWeaponIndex, user.CurrentWeaponIndex },
             { USER_FIELD_CurrentCharacterIndex, user.CurrentCharacterIndex },
+            { USER_FIELD_CurrentCoin, user.CurrentCoin },
+            { USER_FIELD_Mission, CurrentUser.Mission },
+
         });
     }
     
@@ -251,6 +286,23 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
                         characterList = characterObjectList.ConvertAll(character => Convert.ToInt32(character));
                     }
                 }
+                
+                List<int> amountList = new List<int>();
+                List<bool> stateList = new List<bool>();
+                
+                if (userData.ContainsKey(USER_FIELD_Mission))
+                {
+                    Dictionary<string, object> missionData = (Dictionary<string, object>)userData[USER_FIELD_Mission];
+                    if (missionData.ContainsKey(USER_FIELD_Mission_Amount) && missionData[USER_FIELD_Mission_Amount] is List<object> amountObjectList)
+                    {
+                        amountList = amountObjectList.ConvertAll(amount => Convert.ToInt32(amount));
+                    }
+                    
+                    if (missionData.ContainsKey(USER_FIELD_Mission_State) && missionData[USER_FIELD_Mission_State] is List<object> stateObjectList)
+                    {
+                        stateList = stateObjectList.ConvertAll(state => Convert.ToBoolean(state));
+                    }
+                }
 
                 User user = new User
                 {
@@ -265,6 +317,13 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
                     CurrentLevelIndex = userData.ContainsKey(USER_FIELD_CurrentLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentLevelIndex]) : 0,
                     CurrentWeaponIndex = userData.ContainsKey(USER_FIELD_CurrentWeaponIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentWeaponIndex]) : 0,
                     CurrentCharacterIndex = userData.ContainsKey(USER_FIELD_CurrentCharacterIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentCharacterIndex]) : 0,
+                    CurrentCoin = userData.ContainsKey(USER_FIELD_CurrentCoin) ? Convert.ToInt32(userData[USER_FIELD_CurrentCoin]) : 0,
+                    
+                    Mission = new Mission()
+                    {
+                        Amount = amountList,
+                        State = stateList,
+                    }
                 };
 
                 userList.Add(user);
@@ -309,6 +368,23 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
                             characterList = characterObjectList.ConvertAll(character => Convert.ToInt32(character));
                         }
                     }
+                    
+                    List<int> amountList = new List<int>();
+                    List<bool> stateList = new List<bool>();
+                
+                    if (userData.ContainsKey(USER_FIELD_Mission))
+                    {
+                        Dictionary<string, object> missionData = (Dictionary<string, object>)userData[USER_FIELD_Mission];
+                        if (missionData.ContainsKey(USER_FIELD_Mission_Amount) && missionData[USER_FIELD_Mission_Amount] is List<object> amountObjectList)
+                        {
+                            amountList = amountObjectList.ConvertAll(amount => Convert.ToInt32(amount));
+                        }
+                    
+                        if (missionData.ContainsKey(USER_FIELD_Mission_State) && missionData[USER_FIELD_Mission_State] is List<object> stateObjectList)
+                        {
+                            stateList = stateObjectList.ConvertAll(state => Convert.ToBoolean(state));
+                        }
+                    }
 
                     CurrentUser = new User
                     {
@@ -323,6 +399,12 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
                         CurrentLevelIndex = userData.ContainsKey(USER_FIELD_CurrentLevelIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentLevelIndex]) : 0,
                         CurrentWeaponIndex = userData.ContainsKey(USER_FIELD_CurrentWeaponIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentWeaponIndex]) : 0,
                         CurrentCharacterIndex = userData.ContainsKey(USER_FIELD_CurrentCharacterIndex) ? Convert.ToInt32(userData[USER_FIELD_CurrentCharacterIndex]) : 0,
+                        CurrentCoin = userData.ContainsKey(USER_FIELD_CurrentCoin) ? Convert.ToInt32(userData[USER_FIELD_CurrentCoin]) : 0,
+                        Mission = new Mission()
+                        {
+                            Amount = amountList,
+                            State = stateList,
+                        }
                     };
 
                     if (string.IsNullOrEmpty(CurrentUser.Name))
@@ -354,6 +436,8 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
             { USER_FIELD_CurrentLevelIndex, CurrentUser.CurrentLevelIndex },
             { USER_FIELD_CurrentWeaponIndex, CurrentUser.CurrentWeaponIndex },
             { USER_FIELD_CurrentCharacterIndex, CurrentUser.CurrentCharacterIndex },
+            { USER_FIELD_CurrentCoin, CurrentUser.CurrentCoin },
+            { USER_FIELD_Mission, CurrentUser.Mission },
         });
     }
 
@@ -476,7 +560,8 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
      */
 
     private void ChangeUserSaved(string name = STRING_EMPTY, int currentMaxLevelIndex = -1, bool puzzleUnlocked = false
-        , Bag bag = null, int currentLevelIndex = -1, int currentWeaponIndex = -1, int currentCharacterIndex = -1)
+        , Bag bag = null, int currentLevelIndex = -1, int currentWeaponIndex = -1, int currentCharacterIndex = -1,
+        int currentCoin = -1, Mission mission = null)
     {
         CurrentUser = new User
         {
@@ -487,6 +572,9 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
             CurrentLevelIndex = currentLevelIndex.Equals(-1) ? CurrentUser.CurrentLevelIndex : currentLevelIndex,
             CurrentWeaponIndex = currentWeaponIndex.Equals(-1) ? CurrentUser.CurrentWeaponIndex : currentWeaponIndex,
             CurrentCharacterIndex = currentCharacterIndex.Equals(-1) ? CurrentUser.CurrentCharacterIndex : currentCharacterIndex,
+            CurrentCoin = currentCoin.Equals(-1) ? CurrentUser.CurrentCoin : currentCoin,
+            Mission = mission ?? CurrentUser.Mission,
+
         };
         
         UpdateUserSaved();
@@ -503,17 +591,28 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
         ChangeUserSaved(currentMaxLevelIndex: nextLevelIndex, puzzleUnlocked:false);
     }
     
-    public void BuyWeapon(int weaponIndex)
+    public void BuyWeapon(int weaponIndex, int reductCoin)
     {
         CurrentUser.Bag.Weapon.Add(weaponIndex);
+        CurrentUser.CurrentCoin -= reductCoin;
+        
         ChangeUserSaved();
     }
     
-    public void BuyCharacter(int characterIndex)
+    public void BuyCharacter(int characterIndex, int reductCoin)
     {
         CurrentUser.Bag.Character.Add(characterIndex);
+        CurrentUser.CurrentCoin -= reductCoin;
+
         ChangeUserSaved();
     }   
+    
+    public void PaymentCoin(int addCoin)
+    {
+        CurrentUser.CurrentCoin += addCoin;
+        
+        ChangeUserSaved();
+    }
     
     public void UseLevel(int currentLevelIndex)
     {
@@ -529,6 +628,21 @@ public class FirebaseManager : PersistentSingleton<FirebaseManager>
     public void UseCharacter(int currentCharacterIndex)
     {
         ChangeUserSaved(currentCharacterIndex:currentCharacterIndex);
+    }
+    
+    public void UpdateMissionAmount(int missionIndex, int addMissionAmount)
+    {
+        CurrentUser.Mission.Amount[missionIndex] += addMissionAmount;
+
+        ChangeUserSaved();
+    }
+    
+    public void UpdateMissionState(int missionIndex, int rewardMission)
+    {
+        CurrentUser.Mission.State[missionIndex] = true;
+        CurrentUser.CurrentCoin += rewardMission;
+
+        ChangeUserSaved();
     }
     
     /*

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HIEU_NL.SO.Character;
 using HIEU_NL.SO.Weapon;
 using HIEU_NL.Utilities;
+using NaughtyAttributes;
 using TMPro;
 using UI.MainMenu.Single;
 using UnityEngine;
@@ -47,6 +48,13 @@ public class ShopUI_MainMenuCanvas : RyoMonoBehaviour
     private WeaponData _currentWeaponData;
     private CharacterData _currentCharacterData;
     
+    
+    [SerializeField, BoxGroup("PAYMENT")] private PaymentCoinUI_MainMenuCanvas _paymentObject;
+    [SerializeField, BoxGroup("PAYMENT")] private TextMeshProUGUI _coinText;
+    [SerializeField, BoxGroup("PAYMENT")] private Button _addCoinButton;
+    [SerializeField, BoxGroup("PAYMENT")] private Button _adsButton;
+    
+    
     protected override void Awake()
     {
         base.Awake();
@@ -61,6 +69,11 @@ public class ShopUI_MainMenuCanvas : RyoMonoBehaviour
         
         _exitButton.onClick.AddListener(() => {
             Exit();
+        });
+        
+        _addCoinButton.onClick.AddListener(() =>
+        {
+            ShowPaymentUI();
         });
 
     }
@@ -85,6 +98,15 @@ public class ShopUI_MainMenuCanvas : RyoMonoBehaviour
         
         WeaponSingleUI_MainMenuCanvas.OnSelectWeapon += WeaponSingleUI_OnSelectWeapon;
         CharacterSingleUI_MainMenuCanvas.OnSelectCharacter += CharacterSingleUI_OnSelectCharacter;
+        
+        PaymentCoinSingleUI_MainMenuCanvas.OnPayment += PaymentCoinUI_OnPayment;
+    }
+
+    private void PaymentCoinUI_OnPayment(object sender, int e)
+    {
+        FirebaseManager.Instance.PaymentCoin(e);
+        
+        UpdateVisualCoin();
     }
 
     private void CharacterSingleUI_OnSelectCharacter(object sender, CharacterData e)
@@ -101,6 +123,8 @@ public class ShopUI_MainMenuCanvas : RyoMonoBehaviour
 
     private void UpdateVisual()
     {
+        UpdateVisualCoin();
+        
         foreach (WeaponData weaponData in _weaponDataListSO.WeaponDataList)
         {
             CreateWeapoList(weaponData);
@@ -165,11 +189,19 @@ public class ShopUI_MainMenuCanvas : RyoMonoBehaviour
         
         ShowSelectWeapon_Image_Detail();
         HideSelectCharacter_Image_Detail();
-
+        
         if (isStartShowShop)
         {
-            _isWeaponUnlocked = true;
-            _selectWeaponButton_Text.text = SelectAction_Used;
+            if (FirebaseManager.Instance.CurrentUser.CurrentWeaponIndex.Equals(weaponData.WeaponIndex))
+            {
+                _isWeaponUnlocked = true;
+                _selectWeaponButton_Text.text = SelectAction_Used;
+            }
+            else
+            {
+                _isWeaponUnlocked = true;
+                _selectWeaponButton_Text.text = SelectAction_Use;
+            }
         }
         else if (FirebaseManager.Instance.CurrentUser.Bag.Weapon.Contains(weaponData.WeaponIndex))
         {
@@ -226,12 +258,15 @@ public class ShopUI_MainMenuCanvas : RyoMonoBehaviour
             _selectWeaponButton_Text.text = SelectAction_Used;
             FirebaseManager.Instance.UseWeapon(_currentWeaponData.WeaponIndex);
         }
-        else
+        else if (FirebaseManager.Instance.CurrentUser.CurrentCoin >= _currentWeaponData.WeaponCost)
         {
             Debug.Log("Buy Weapon");
             _isWeaponUnlocked = true;
             _selectWeaponButton_Text.text = SelectAction_Use;
-            FirebaseManager.Instance.BuyWeapon(_currentWeaponData.WeaponIndex);
+            FirebaseManager.Instance.BuyWeapon(_currentWeaponData.WeaponIndex, _currentWeaponData.WeaponCost);
+            FirebaseManager.Instance.UpdateMissionAmount(2, 1);
+
+            UpdateVisualCoin();
         }
     }
     
@@ -243,12 +278,14 @@ public class ShopUI_MainMenuCanvas : RyoMonoBehaviour
             _selectCharacterButton_Text.text = SelectAction_Used;
             FirebaseManager.Instance.UseCharacter(_currentCharacterData.CharacterIndex);
         }
-        else
+        else if (FirebaseManager.Instance.CurrentUser.CurrentCoin >= _currentCharacterData.CharacterCost)
         {
             Debug.Log("Buy Character");
             _isCharacterUnlocked = true;
             _selectCharacterButton_Text.text = SelectAction_Use;
-            FirebaseManager.Instance.BuyCharacter(_currentCharacterData.CharacterIndex);
+            FirebaseManager.Instance.BuyCharacter(_currentCharacterData.CharacterIndex, _currentCharacterData.CharacterCost);
+            
+            UpdateVisualCoin();
         } 
     }
     
@@ -257,6 +294,11 @@ public class ShopUI_MainMenuCanvas : RyoMonoBehaviour
         Hide();
     }
 
+    private void ShowPaymentUI()
+    {
+        _paymentObject.Show();
+    }
+    
     /*
      *
      */
@@ -317,6 +359,11 @@ public class ShopUI_MainMenuCanvas : RyoMonoBehaviour
     {
         _selectWeaponDetail_Text.gameObject.SetActive(false);
         _selectWeapon_Image.gameObject.SetActive(false);
+    }
+
+    private void UpdateVisualCoin()
+    {
+        _coinText.text = FirebaseManager.Instance.CurrentUser.CurrentCoin.ToString();
     }
 
 }

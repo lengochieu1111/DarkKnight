@@ -1,4 +1,5 @@
 using HIEU_NL.Platformer.Script.Entity;
+using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using UnityEngine;
 
 namespace HIEU_NL.Platformer.Script.Interface
@@ -10,12 +11,12 @@ namespace HIEU_NL.Platformer.Script.Interface
     
     public class HitData
     {
-        public BaseEntity DamageCauser { get; private set; }
+        public Prefab_Platformer DamageCauser { get; private set; }
         public Vector3 AttackDirection { get; private set; }
         public int Damage { get; private set; }
         public bool IsCausedByPlayer { get; private set; }
 
-        public HitData(BaseEntity damageCauser = default, Vector3 attackDirection = default, int damage = 10,
+        public HitData(Prefab_Platformer damageCauser = default, Vector3 attackDirection = default, int damage = 10,
             bool isCausedByPlayer = true)
         {
             DamageCauser = damageCauser;

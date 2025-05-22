@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using HIEU_NL.Utilities;
 using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,35 +31,49 @@ public class Bar_PlatformerUI : RyoMonoBehaviour
 
     public void Update_Bar(float percentage)
     {
-        foreach (Image barImage in _barImageArray)
+        try
         {
-            barImage.fillAmount = Mathf.Clamp(percentage, MIN_HEALTH, MAX_HEALTH);
-        }
+            if(_barImageArray.IsNullOrEmpty()) return;
 
-        if (_onlyShowHealthBarWhenLowHealth && percentage < MAX_HEALTH)
-        {
-            Show();
-            
-            if (_hideBarCoroutine != null)
+            foreach (Image barImage in _barImageArray)
             {
-                StopCoroutine(_hideBarCoroutine);
+                barImage.fillAmount = Mathf.Clamp(percentage, MIN_HEALTH, MAX_HEALTH);
             }
-            
-            _hideBarCoroutine = StartCoroutine(IE_HideBarCoroutine());
+
+            if (_onlyShowHealthBarWhenLowHealth && percentage < MAX_HEALTH)
+            {
+                Show();
+                
+                if (_hideBarCoroutine != null)
+                {
+                    StopCoroutine(_hideBarCoroutine);
+                }
+                
+                _hideBarCoroutine = StartCoroutine(IE_HideBarCoroutine());
+            }
+        
+        }
+        catch (Exception e)
+        {
+
         }
         
     }
     
     private void Show()
     {
+        if(_imageArray.IsNullOrEmpty()) return;
+        
         foreach (Image barImage in _imageArray)
         {
             barImage.enabled = true;
         }
     }
     
-    private void Hide()
+    public void Hide()
     {
+        if(_imageArray.IsNullOrEmpty()) return;
+
         foreach (Image barImage in _imageArray)
         {
             barImage.enabled = false;

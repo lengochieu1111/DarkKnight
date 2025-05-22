@@ -3,9 +3,11 @@ using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.Map;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using HIEU_NL.Platformer.SO.Entity;
+using HIEU_NL.Utilities;
 using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 namespace HIEU_NL.Platformer.Script.Entity
 {
@@ -13,7 +15,6 @@ namespace HIEU_NL.Platformer.Script.Entity
     {
         public event EventHandler<HitData> OnTakeDamage;
         public event EventHandler OnDead;
-        
         
         [field: SerializeField, BoxGroup("MAP HOUSE")] public EMapHouseType_Platformer MapHouseTypePlatformer { get; private set; }
         [field: SerializeField, BoxGroup("MAP HOUSE")] public EBotPlacementType_Platformer BotPlacementTypePlatformer { get; private set; }
@@ -27,6 +28,7 @@ namespace HIEU_NL.Platformer.Script.Entity
 
         //# BODY
         [SerializeField, BoxGroup("BODY"), Required] protected Transform centerOfBodyTransform;
+        public Transform CenterOfBodyTransform => centerOfBodyTransform;
         
         //# STATS
         [SerializeField, BoxGroup("STATS")] protected EntityStats stats;
@@ -35,6 +37,11 @@ namespace HIEU_NL.Platformer.Script.Entity
         [SerializeField, BoxGroup("HEALTH")] protected bool isDead;
         [SerializeField, BoxGroup("HEALTH")] protected int health = 100;
         [SerializeField, BoxGroup("HEALTH")] protected int maxHealth = 100;
+        [SerializeField, BoxGroup("HEALTH")] protected PrefabType_Platformer takeDamageType = PrefabType_Platformer.EFFECT_Blood_Red;
+        [SerializeField, BoxGroup("HEALTH")] protected PrefabType_Platformer damageNumberType = PrefabType_Platformer.EFFECT_DamageNumber;
+        [SerializeField, BoxGroup("HEALTH"), Range(0f, 5f)] protected float damageNumberRadiusOffset = 1f;
+        [SerializeField, BoxGroup("HEALTH"), Range(0f, 5f)] protected float damageNumberHeightOffset_ = 0.2f;
+        [SerializeField, BoxGroup("HEALTH"), Range(1f, 5f)] protected float damageNumberScale = 1f;
         public int Health => health;
         public int MaxHealth => maxHealth;
         public bool IsDead => isDead;
@@ -52,6 +59,7 @@ namespace HIEU_NL.Platformer.Script.Entity
         protected RaycastHit2D wallHit;
         protected RaycastHit2D lastWallHit;
         public bool IsTouchingWall => isTouchingWall;
+        public bool IsGrounded => isGrounded;
             
         #region UNITY CORE
         
@@ -79,8 +87,8 @@ namespace HIEU_NL.Platformer.Script.Entity
 
             //## Health
             isDead = false;
-            health = stats.MaxHealth;
-            maxHealth = stats.MaxHealth;
+            // health = stats.MaxHealth;
+            // maxHealth = stats.MaxHealth;
         }
         
         #region COLLISION CHECK
@@ -216,22 +224,21 @@ namespace HIEU_NL.Platformer.Script.Entity
         public virtual bool ITakeDamage(HitData hitData)
         {
             if (isDead) return false;
+
+            if (DefenseCheck())
+            {
+                HandleDefense();
+                return false;
+            }
             
             health = Mathf.Max(0, health - hitData.Damage);
             isDead = health <= 0;
 
-            Prefab_Platformer bloodPool = ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.EFFECT_Blood_1, parent:centerOfBodyTransform);
-            bloodPool.Activate();
+            HandleTakeDamage(hitData);
             
-            //## Hit Event
-            OnTakeDamage?.Invoke(this, hitData);
-
-            //## Dead Event
             if (isDead)
             {
                 HandleDead();
-                
-                OnDead?.Invoke(this, EventArgs.Empty);
             }
             else
             {
@@ -254,14 +261,49 @@ namespace HIEU_NL.Platformer.Script.Entity
 
         #endregion
 
+        protected virtual void HandleTakeDamage(HitData hitData)
+        {
+            Prefab_Platformer bloodPool = ObjectPool_Platformer.Instance.GetPoolObject(takeDamageType, parent:centerOfBodyTransform);
+            bloodPool.transform.localScale = new Vector3(damageNumberScale, damageNumberScale, damageNumberScale);
+            bloodPool.Activate();
+            
+            Vector3 spawnPosition = centerOfBodyTransform.position.Add(y:damageNumberHeightOffset_) + (Vector3)Random.insideUnitCircle * damageNumberRadiusOffset;
+            Prefab_Platformer damageNUmberPool = ObjectPool_Platformer.Instance.GetPoolObject(damageNumberType, position:spawnPosition);
+            damageNUmberPool.transform.localScale = new Vector3(damageNumberScale, damageNumberScale, damageNumberScale);
+            if (damageNUmberPool is DamageEffect_Platformer damageNumber)
+            {
+                damageNumber.Setup(hitData);
+            }
+            damageNUmberPool.Activate();
+            
+            //##
+            OnTakeDamage?.Invoke(this, hitData);
+        }
+        
         protected virtual void HandleDead()
         {
-            
+            OnDead?.Invoke(this, EventArgs.Empty);
         }
 
         protected virtual void HandlePain()
         {
             
+        }
+        
+        protected virtual bool DefenseCheck()
+        {
+            return false;
+        }
+        
+        protected virtual void HandleDefense()
+        {
+            
+        }
+
+        public void SetHealth(int healthValue)
+        {
+            health = healthValue;
+            maxHealth = healthValue;
         }
 
     }

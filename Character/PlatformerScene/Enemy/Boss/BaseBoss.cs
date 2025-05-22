@@ -1,4 +1,5 @@
 using System;
+using HIEU_NL.Platformer.Script.Game;
 using HIEU_NL.Platformer.Script.Interface;
 using NaughtyAttributes;
 using UnityEngine;
@@ -8,47 +9,52 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Boss
     public abstract class BaseBoss : BaseEnemy
     {
         public static event EventHandler<float> OnHealthChange; // float : health percent
-        public static event EventHandler<float> OnEnergyChange; // float : energy percent
-        
-        //# ENERGY
-        [SerializeField, BoxGroup("ENERGY")] protected int energy = 100;
-        [SerializeField, BoxGroup("ENERGY")] protected int maxEnergy = 100;
-        public int Energy => energy;
-        public int MaxEnergy => maxEnergy;
-        
-        
+        public bool IsActivate = false;
+
+        protected override void ResetValues()
+        {
+            base.ResetValues();
+            
+            IsActivate = false;
+        }
+
         /*#region CALL EVENT ACTION
-        
+
         protected virtual void CallEvent_OnHealthChange()
         {
             OnHealthChange?.Invoke(this, GetHealthPercentage());
         }
-        
+
         protected virtual void CallEvent_OnEnergyChange()
         {
             OnHealthChange?.Invoke(this, GetEnergyPercentage());
         }
-        
+
         #endregion*/
         
-        public float GetEnergyPercentage() { return energy * 1f / maxEnergy; }
         
-        #region INTERFACE : DAMAGEABLE
-        
-        public override bool ITakeDamage(HitData hitData)
+        protected override void HandleTakeDamage(HitData hitData)
         {
-            bool result = base.ITakeDamage(hitData);
-
-            if (!result) return false;
-
+            base.HandleTakeDamage(hitData);
+            
             //## Health Change Event
             OnHealthChange?.Invoke(this, GetHealthPercentage());
-            
-            return true;
-            
         }
-        
-        #endregion
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            
+            //##
+            PlatformerCanvas.Instance.OnBossComing += PlatformerCanvas_OnBossComing;
+        }
+
+        private void PlatformerCanvas_OnBossComing(object sender, EventArgs e)
+        {
+            IsActivate = true;
+        }
+
+
 
         
     }

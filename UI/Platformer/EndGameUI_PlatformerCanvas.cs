@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using HIEU_NL.Manager;
@@ -9,9 +10,13 @@ using UnityEngine.UI;
 
 public class EndGameUI_PlatformerCanvas : RyoMonoBehaviour
 {
+    private const string RESULT_VICTORY = "VICTORY";
+    private const string RESULT_DEFEAT = "DEFEAT";
+    
     [SerializeField, BoxGroup] private Button _menuButton;
-    [SerializeField, BoxGroup] private Button _nextButton;
-    [SerializeField, BoxGroup] private TextMeshProUGUI _nextText;
+    [SerializeField, BoxGroup] private Button _actionButton;
+    [SerializeField, BoxGroup] private TextMeshProUGUI _resultText;
+    [SerializeField, BoxGroup] private TextMeshProUGUI _actionText;
 
     protected override void Awake()
     {
@@ -23,7 +28,7 @@ public class EndGameUI_PlatformerCanvas : RyoMonoBehaviour
             SceneTransitionManager.Instance.LoadScene(EScene.MainMenu);
         });
         
-        _nextButton.onClick.AddListener(() =>
+        _actionButton.onClick.AddListener(() =>
         {
             if (GameMode_Platformer.Instance.IsGameWon)
             {
@@ -42,15 +47,25 @@ public class EndGameUI_PlatformerCanvas : RyoMonoBehaviour
         base.OnEnable();
         
         //##
+
+        UpdateVisuals();
+    }
+    
+    //#
+    
+
+    private void UpdateVisuals()
+    {
         if (GameMode_Platformer.Instance.IsGameWon)
         {
-            _nextText.text = "Next Level";
+            _resultText.text = RESULT_VICTORY;
+            _actionText.text = "Next Level";
         }
         else
         {
-            _nextText.text = "Restart Level";
+            _resultText.text = RESULT_DEFEAT;
+            _actionText.text = "Restart Level";
         }
-        
     }
 
 
@@ -58,7 +73,12 @@ public class EndGameUI_PlatformerCanvas : RyoMonoBehaviour
     
     public void Show()
     {
-        gameObject.SetActive(true);
+        try
+        {
+            gameObject.SetActive(true);
+        }
+        catch (Exception e)
+        { }
     }
 
     public void Hide()

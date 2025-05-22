@@ -8,30 +8,37 @@ namespace HIEU_NL.Platformer.Script.Effect
 {
     public class BaseEffect_Platformer : Prefab_Platformer
     {
+        [SerializeField, BoxGroup("ACTIVATE")]
+        protected bool _autoDeactivate = true;
+        
         [SerializeField, BoxGroup("ANIMATION")]
-        private bool _deactiveAfterAnimationEnd;
+        protected bool _deactiveAfterAnimationEnd;
 
         [SerializeField, BoxGroup("ANIMATION"), Required("ANIMATION"), ShowIf("_deactiveAfterAnimationEnd")]
-        private Animator _animator;
+        protected Animator _animator;
 
         [SerializeField, BoxGroup("PARTICLE SYSTEM")]
-        private bool _deactiveAfterParticleSystemEnd;
+        protected bool _deactiveAfterParticleSystemEnd;
 
         [SerializeField, BoxGroup("PARTICLE SYSTEM"), Required("ANIMATION"), ShowIf("_deactiveAfterParticleSystemEnd")]
-        private ParticleSystem _particleSystem;
+        protected ParticleSystem _particleSystem;
 
-        private Coroutine _deactivateCoroutine;
+        protected Coroutine _deactivateCoroutine;
 
         protected override void OnEnable()
         {
             base.OnEnable();
 
             //## Deactive Affter Effect End
-            Deactivate_UniTask().Forget();
+
+            if (_autoDeactivate)
+            {
+                Deactivate_UniTask().Forget();
+            }
 
         }
 
-        private async UniTask Deactivate_UniTask()
+        protected async UniTask Deactivate_UniTask()
         {
             if (_deactiveAfterAnimationEnd && _animator != null)
             {
@@ -52,8 +59,17 @@ namespace HIEU_NL.Platformer.Script.Effect
                 //##
                 bool ParticleSystemIsActive()
                 {
-                    return _particleSystem.isPlaying && _particleSystem.particleCount > 0
-                                                     && !_particleSystem.isStopped && _particleSystem.IsAlive();
+                    try
+                    {
+                        return _particleSystem.isPlaying && _particleSystem.particleCount > 0
+                                                         && !_particleSystem.isStopped && _particleSystem.IsAlive();
+                    }
+                    catch (Exception e)
+                    {
+                    }
+
+                    return false;
+
                 }
 
             }

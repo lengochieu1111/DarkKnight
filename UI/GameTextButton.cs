@@ -30,7 +30,9 @@ public class GameTextButton : RyoMonoBehaviour, IPointerEnterHandler, IPointerEx
     {
         base.ResetComponents();
 
-        _buttonPointer.gameObject.SetActive(false);
+        if (_buttonPointer == null) return;
+        
+        _buttonPointer?.gameObject.SetActive(false);
     }
 
     /*
@@ -60,12 +62,16 @@ public class GameTextButton : RyoMonoBehaviour, IPointerEnterHandler, IPointerEx
      */
 
     private void ShowButtonPointer()
-    {
+    {        
+        if (_buttonPointer == null) return;
+
         _buttonPointer?.gameObject.SetActive(true);
     }
     
     private void HideButtonPointer()
     {
+        if (_buttonPointer == null) return;
+
         _buttonPointer?.gameObject.SetActive(false);
     }
 

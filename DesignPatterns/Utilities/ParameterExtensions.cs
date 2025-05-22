@@ -30,12 +30,19 @@ namespace HIEU_NL.Utilities
             public const string USER_FIELD_Name = "Name";
             public const string USER_FIELD_CurrentMaxLevelIndex = "CurrentMaxLevelIndex";
             public const string USER_FIELD_PuzzleUnlocked = "PuzzleUnlocked";
+            
             public const string USER_FIELD_Bag = "Bag";
             public const string USER_FIELD_Bag_Weapon = "Weapon";
             public const string USER_FIELD_Bag_Character = "Character";
+            
             public const string USER_FIELD_CurrentLevelIndex = "CurrentLevelIndex";
             public const string USER_FIELD_CurrentWeaponIndex = "CurrentWeaponIndex";
             public const string USER_FIELD_CurrentCharacterIndex = "CurrentCharacterIndex";
+            public const string USER_FIELD_CurrentCoin = "CurrentCoin";
+            
+            public const string USER_FIELD_Mission = "Mission";
+            public const string USER_FIELD_Mission_Amount = "Amount";
+            public const string USER_FIELD_Mission_State = "State";
 
             //##
             public const string COLLECTION_Application = "Application";
@@ -96,6 +103,27 @@ namespace HIEU_NL.Utilities
             
             public static readonly int ANIM_HASH_Fly = Animator.StringToHash("Fly");
             
+            //##
+            
+            public static readonly int ANIM_HASH_Idle_Enhanced = Animator.StringToHash("Idle_Enhanced");
+            public static readonly int ANIM_HASH_Walk_Enhanced = Animator.StringToHash("Walk_Enhanced");
+            public static readonly int ANIM_HASH_Run_Enhanced = Animator.StringToHash("Run_Enhanced");
+            public static readonly int ANIM_HASH_Dash_Enhanced = Animator.StringToHash("Dash_Enhanced");
+
+            public static readonly int ANIM_HASH_JumpStart_Enhanced = Animator.StringToHash("JumpStart_Enhanced");
+            public static readonly int ANIM_HASH_JumpLoop_Enhanced = Animator.StringToHash("JumpLoop_Enhanced");
+            public static readonly int ANIM_HASH_JumpEnd_Enhanced = Animator.StringToHash("Landing_Enhanced");
+
+            public static readonly int ANIM_HASH_Attack_Enhanced = Animator.StringToHash("Attack_Enhanced");
+
+            public static readonly int ANIM_HASH_Pain_Enhanced = Animator.StringToHash("Pain_Enhanced");
+
+            public static readonly int ANIM_HASH_Dead_Enhanced = Animator.StringToHash("Dead_Enhanced");
+            
+            public static readonly int ANIM_HASH_Fly_Enhanced = Animator.StringToHash("Fly_Enhanced");
+            
+            
+            
             // Advance
             
             public static readonly int ANIM_HASH_TeleportStart = Animator.StringToHash("TeleportStart");
@@ -105,6 +133,10 @@ namespace HIEU_NL.Utilities
             
             public static readonly int ANIM_HASH_Dead_1 = Animator.StringToHash("Dead_1");
             public static readonly int ANIM_HASH_Dead_2 = Animator.StringToHash("Dead_2");
+            
+            public static readonly int ANIM_HASH_Enhanced = Animator.StringToHash("Enhanced");
+            
+            public static readonly int ANIM_HASH_Defense = Animator.StringToHash("Defense");
 
             public enum AnimationType
             {
@@ -138,6 +170,18 @@ namespace HIEU_NL.Utilities
                 Attack_Special_4,
                 Attack_Special_5,
                 
+                Attack_1_Enhanced,
+                Attack_2_Enhanced,
+                Attack_3_Enhanced,
+                Attack_4_Enhanced,
+                Attack_5_Enhanced,
+                
+                Attack_Special_1_Enhanced,
+                Attack_Special_2_Enhanced,
+                Attack_Special_3_Enhanced,
+                Attack_Special_4_Enhanced,
+                Attack_Special_5_Enhanced,
+                
                 Defense,
                 
             }
@@ -169,6 +213,16 @@ namespace HIEU_NL.Utilities
                 { AnimationType.Attack_Special_2, Animator.StringToHash("Attack_Special_2") },
                 { AnimationType.Attack_Special_3, Animator.StringToHash("Attack_Special_3") },
                 { AnimationType.Attack_Special_4, Animator.StringToHash("Attack_Special_4") },
+                
+                { AnimationType.Attack_1_Enhanced, Animator.StringToHash("Attack_1_Enhanced") },
+                { AnimationType.Attack_2_Enhanced, Animator.StringToHash("Attack_2_Enhanced") },
+                { AnimationType.Attack_3_Enhanced, Animator.StringToHash("Attack_3_Enhanced") },
+                { AnimationType.Attack_4_Enhanced, Animator.StringToHash("Attack_4_Enhanced") },
+                
+                { AnimationType.Attack_Special_1_Enhanced, Animator.StringToHash("Attack_Special_1_Enhanced") },
+                { AnimationType.Attack_Special_2_Enhanced, Animator.StringToHash("Attack_Special_2_Enhanced") },
+                { AnimationType.Attack_Special_3_Enhanced, Animator.StringToHash("Attack_Special_3_Enhanced") },
+                { AnimationType.Attack_Special_4_Enhanced, Animator.StringToHash("Attack_Special_4_Enhanced") },
                 
             };
 

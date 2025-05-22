@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using NaughtyAttributes;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace HIEU_NL.SO.Weapon
 {
@@ -12,6 +13,8 @@ namespace HIEU_NL.SO.Weapon
     {
         [BoxGroup("PLATFORMER")] public PrefabType_Platformer AttackEffectOne;
         [BoxGroup("PLATFORMER")] public PrefabType_Platformer AttackEffectTwo;
+        [BoxGroup("PLATFORMER")] public PrefabType_Platformer SpecialAttackEffect;
+        [BoxGroup("PLATFORMER")] public PrefabType_Platformer HitAttackEffect;
     }
     
 
@@ -23,6 +26,13 @@ namespace HIEU_NL.SO.Weapon
     {
         //## PLATFORMER
         [BoxGroup("PLATFORMER")] public WeaponAttackData WeaponPrefab_Platformer;
+        
+        [BoxGroup("INFORMATION")] public int WeaponNormalDamage;
+        [BoxGroup("INFORMATION")] public int WeaponSpecialDamage;
+        
+        [BoxGroup("INFORMATION")] public int WeaponSpecialEnergyReduct;
+        
+        [BoxGroup("INFORMATION")] public int WeaponNormalEnergyRecovery;
         
         [BoxGroup("INFORMATION")] public string WeaponName;
         [BoxGroup("INFORMATION")] public int WeaponIndex;

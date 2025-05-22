@@ -72,6 +72,7 @@ namespace HIEU_NL.Platformer.SO.Entity.Player
         public bool ResetDashOnWallSlide = true;
         [Range(1, 5)] public int NumberOfDashes = 2;
         [Range(0f, 0.5f)] public float DashDiagonallyBias = 0.4f;
+        [Range(10, 40)] public int DashEnergyReduct = 20;
 
         [Header("Dash Cancle Time")]
         [Range(0.01f, 5f)] public float DashGravityOnReleaseMultiplier = 1f;

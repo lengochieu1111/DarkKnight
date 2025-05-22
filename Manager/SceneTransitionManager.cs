@@ -13,7 +13,9 @@ namespace HIEU_NL.Manager
         Login,
         MainMenu,
         Puzzle,
-        Platformer
+        Platformer,
+        
+        Preparation
     }
 
     public class SceneTransitionManager : PersistentSingleton<SceneTransitionManager>
@@ -74,7 +76,7 @@ namespace HIEU_NL.Manager
             if (_isTransitioning) return;
             
             _eScene = (EScene)SceneManager.GetActiveScene().buildIndex;
-            StartCoroutine(TransitionCoroutine());
+            StartCoroutine(TransitionCoroutine(true));
         }
         
         private void ShowTransitionImage()
@@ -89,7 +91,7 @@ namespace HIEU_NL.Manager
             _transitionImageRectTransform.gameObject.SetActive(false);
         }
         
-        private IEnumerator TransitionCoroutine()
+        private IEnumerator TransitionCoroutine(bool isReloadScene = false)
         {
             _isTransitioning = true;
 
@@ -116,6 +118,17 @@ namespace HIEU_NL.Manager
             }
             
             // Step 2: Load the new scene
+            if (isReloadScene)
+            {
+                AsyncOperation asyncLoadPre = SceneManager.LoadSceneAsync((int)EScene.Preparation);
+                asyncLoadPre.allowSceneActivation = true;
+            
+                while (!asyncLoadPre.isDone)
+                {
+                    yield return null;
+                }
+            }
+            
             AsyncOperation asyncLoad = SceneManager.LoadSceneAsync((int)_eScene);
             asyncLoad.allowSceneActivation = true;
             

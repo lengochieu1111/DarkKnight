@@ -1,3 +1,5 @@
+using HIEU_NL.Platformer.Script.Game;
+using HIEU_NL.Platformer.Script.Interface;
 using HIEU_NL.Platformer.Script.ObjectPool.Multiple;
 using NaughtyAttributes;
 using UnityEngine;
@@ -11,6 +13,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Beetle
         private Beetle_State.IdleState _idleState; //## Default State
         
         [SerializeField, Foldout("Attack")] private Transform[] _projectileTransform;
+        [SerializeField, Foldout("Attack"), MinMaxSlider(3, 20)] private Vector2 _projectileDamage = new Vector2(5, 5);
 
 
         #region UNITY CORE
@@ -69,6 +72,8 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Beetle
 
         public override bool PlayerInAttackRange()
         {
+            if (GameMode_Platformer.Instance.Player.IsDead) return false;
+
             int coefficient = isFlippingLeft ? -1 : 1;
             // coefficient = isBeginFlipLeft ? coefficient * -1 : coefficient;
             Vector2 endAttackPoint = new Vector2(
@@ -106,6 +111,7 @@ namespace HIEU_NL.Platformer.Script.Entity.Enemy.Beetle
         {
             Prefab_Platformer projectile = ObjectPool_Platformer.Instance.GetPoolObject(PrefabType_Platformer.Projectile_Beetle, spawnPoint.position, Quaternion.identity);
             Projectile_Beetle projectile_Beetle = projectile as Projectile_Beetle;
+            projectile_Beetle.Setup(new HitData(damage: (int)Random.Range(_projectileDamage.x, _projectileDamage.y)));
             projectile_Beetle.Activate(TargetTransform.position);
         }
 

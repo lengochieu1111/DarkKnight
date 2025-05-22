@@ -10,6 +10,7 @@ namespace HIEU_NL.Platformer.Script.Map
     {
         [field: SerializeField] public Transform StartingPlayerPointTransform { get; private set; }
         [field: SerializeField] public Transform PlayerSpawnPointInBossRoomTransform { get; private set; }
+        [field: SerializeField] public CompositeCollider2D CameraColliderBouds { get; private set; }
         [field: SerializeField, ReadOnly] public List<MapHouse_Platformer> MapHouseList;
 
         #region LoadMapHouse

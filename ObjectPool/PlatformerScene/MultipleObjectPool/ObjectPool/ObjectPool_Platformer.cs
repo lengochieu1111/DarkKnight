@@ -185,16 +185,16 @@ namespace HIEU_NL.Platformer.Script.ObjectPool.Multiple
 
         //## TEST
         
-        private void Update()
+        /*private void Update()
         {
             if (Input.GetKeyDown(KeyCode.S))
             {
-                Prefab_Platformer poolPrefab = GetPoolObject(PrefabType_Platformer.BOSS_Viking, transform.position,
+                Prefab_Platformer poolPrefab = GetPoolObject(PrefabType_Platformer.ITEM_Medicien_Health_30Per, transform.position,
                         Quaternion.identity);
                 poolPrefab.Activate();
             }
 
-        }
+        }*/
     }
 }
 
